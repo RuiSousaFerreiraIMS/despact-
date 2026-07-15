@@ -114,8 +114,8 @@ Pendência antes de haver utilizadores reais além do proprietário: SMTP (por e
 Seguir `DATABASE.md` e `DECISIONS.md` sem reinterpretar. Unidades previstas, cada uma com lint/build/commit:
 
 1. ~~Migração financeira~~ — concluída (`20260715140000_financial_core.sql`) e aplicada ao dev; produção no fecho do sprint.
-2. Funcionalidade de contas (listar, criar, editar, arquivar). ← **próxima unidade**
-3. Funcionalidade de categorias.
+2. ~~Funcionalidade de contas~~ — concluída: `/accounts` (listar com saldo derivado, criar, editar, arquivar/reactivar), módulo `src/features/accounts/`, utilitário `src/lib/money/`, view `account_balances`, tipos gerados do esquema.
+3. Funcionalidade de categorias. ← **próxima unidade**
 4. Funcionalidade de transacções, incluindo transferências pela função PostgreSQL.
 5. Aplicar migrações a produção e validar critérios de saída do sprint.
 

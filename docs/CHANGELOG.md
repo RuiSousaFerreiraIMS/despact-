@@ -44,3 +44,13 @@
 - Funções atómicas `create_transfer`/`delete_transfer` com `SECURITY INVOKER` (RLS aplica-se a quem chama).
 - RLS nas três tabelas; contas e categorias sem política de DELETE (arquivam-se), transacções elimináveis.
 - Aplicada ao ambiente de desenvolvimento; produção recebe-a no fecho do sprint.
+- View `account_balances` com `security_invoker`: saldo derivado calculado na base de dados, nunca persistido.
+- Tipos TypeScript gerados do esquema Supabase (`src/types/database.ts`) e aplicados aos clientes.
+
+### Sprint 2 — contas
+
+- Funcionalidade de contas em `src/features/accounts/` (consultas, acções de servidor e validação fora da interface).
+- Páginas `/accounts`, `/accounts/new` e `/accounts/[id]/edit`: listar com saldo, criar, editar, arquivar e reactivar; contas nunca são eliminadas.
+- Utilitário `src/lib/money/` para formatação pt-PT e conversão texto↔unidades mínimas sem vírgula flutuante.
+- Layout autenticado mobile-first com navegação e terminar sessão no cabeçalho.
+- A moeda de uma conta é fixa após a criação (coerência com transacções futuras).
