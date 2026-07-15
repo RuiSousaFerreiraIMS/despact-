@@ -1,51 +1,89 @@
-import Link from "next/link";
+import { LogOut } from "lucide-react";
+import { redirect } from "next/navigation";
+
+import { BottomNav, SidebarNav } from "@/components/app-nav";
+import { createClient } from "@/lib/supabase/server";
 
 import { logout } from "./actions";
 
 /**
- * Layout da área autenticada.
+ * Shell da área autenticada.
  *
- * Navegação mobile-first: cabeçalho compacto com ligações essenciais e
- * terminar sessão. Cresce com as funcionalidades do sprint em curso — sem
- * antecipar painel ou áreas futuras.
+ * Desktop: sidebar fixa em tinta escura (assinatura visual do Despact) com
+ * navegação e sessão. Mobile: cabeçalho compacto e barra de separadores em
+ * baixo com acção central de novo movimento — a app móvel não é o desktop
+ * encolhido.
  */
-export default function AppLayout({
+export default async function AppLayout({
   children,
 }: Readonly<{
   children: React.ReactNode;
 }>) {
+  const supabase = await createClient();
+  const {
+    data: { user },
+  } = await supabase.auth.getUser();
+
+  if (!user) {
+    redirect("/login");
+  }
+
   return (
-    <div className="min-h-screen">
-      <header className="border-b border-gray-200">
-        <div className="mx-auto flex max-w-5xl flex-wrap items-center gap-x-4 gap-y-2 px-4 py-3">
-          <Link href="/" className="text-base font-semibold">
+    <div className="min-h-screen md:flex">
+      {/* Sidebar — desktop */}
+      <aside className="fixed inset-y-0 left-0 z-40 hidden w-60 flex-col bg-sidebar text-sidebar-foreground md:flex">
+        <div className="px-6 py-6">
+          <p className="font-display text-xl font-semibold tracking-tight">
             Despact
-          </Link>
-          <nav className="flex items-center gap-4 text-sm">
-            <Link href="/accounts" className="py-2 hover:underline">
-              Contas
-            </Link>
-            <Link href="/categories" className="py-2 hover:underline">
-              Categorias
-            </Link>
-            <Link href="/transactions" className="py-2 hover:underline">
-              Transacções
-            </Link>
-            <Link href="/goals" className="py-2 hover:underline">
-              Objectivos
-            </Link>
-          </nav>
-          <form action={logout} className="ml-auto">
+          </p>
+          <p className="mt-0.5 text-xs text-sidebar-foreground/50">
+            Finanças com decisão
+          </p>
+        </div>
+        <SidebarNav />
+        <div className="mt-auto border-t border-sidebar-border px-6 py-4">
+          <p className="truncate text-xs text-sidebar-foreground/60">
+            {user.email}
+          </p>
+          <form action={logout} className="mt-2">
             <button
               type="submit"
-              className="py-2 text-sm text-gray-500 hover:text-gray-900"
+              className="flex items-center gap-2 text-sm text-sidebar-foreground/70 transition-colors hover:text-sidebar-foreground"
             >
+              <LogOut className="size-4" />
+              Terminar sessão
+            </button>
+          </form>
+        </div>
+      </aside>
+
+      {/* Cabeçalho — mobile */}
+      <header className="sticky top-0 z-40 border-b border-border bg-background/95 backdrop-blur md:hidden">
+        <div className="flex items-center justify-between px-4 py-3">
+          <p className="font-display text-lg font-semibold tracking-tight">
+            Despact
+          </p>
+          <form action={logout}>
+            <button
+              type="submit"
+              aria-label="Terminar sessão"
+              className="flex items-center gap-1.5 py-1 text-sm text-muted-foreground"
+            >
+              <LogOut className="size-4" />
               Sair
             </button>
           </form>
         </div>
       </header>
-      <div className="mx-auto max-w-5xl px-4 py-6">{children}</div>
+
+      {/* Conteúdo */}
+      <div className="min-w-0 flex-1 md:pl-60">
+        <div className="mx-auto w-full max-w-5xl px-4 pb-24 pt-6 md:px-8 md:pb-10 md:pt-8">
+          {children}
+        </div>
+      </div>
+
+      <BottomNav />
     </div>
   );
 }

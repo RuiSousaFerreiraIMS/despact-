@@ -77,6 +77,14 @@
 - Teste E2E de `goals` na base de dados de desenvolvimento: 8/8 verificações.
 - Migração `goals` aplicada a produção (4/4 sincronizadas); merge e deploy verificados. Sprint 3 concluído.
 
+### Sprint 4 — identidade visual (primeira passagem)
+
+- Base shadcn/ui instalada (preset radix/nova) com tokens próprios do Despact: tinta azul-negra, papel quente, verde-nota como cor de assinatura, token `success` para valores positivos.
+- Tipografia: Space Grotesk (display, números tabulares) e Instrument Sans (corpo), via `next/font`.
+- Shell de navegação novo: sidebar escura fixa no desktop; no mobile, cabeçalho compacto e barra de separadores inferior com acção central destacada para novo movimento.
+- Painel redesenhado: património líquido como elemento principal, cartões de resumo do mês com ícones, listas de contas e objectivos em cartões.
+- Verificação visual por inspecção em viewport desktop e mobile; cálculos do painel confirmados com dados de demonstração.
+
 ### Sprint 2 concluído
 
 - Migrações financeiras aplicadas a produção pela mesma ordem que em desenvolvimento (3/3 sincronizadas).
