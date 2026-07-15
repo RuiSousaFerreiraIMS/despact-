@@ -10,7 +10,13 @@ Permitir que o Claude Code continue o Despact sem voltar a decidir requisitos j�
 
 - Sprint 0: contexto, produto, decisões de domínio, arquitectura, desenho de dados, roadmap e changelog.
 - Início do Sprint 1: aplicação Next.js mínima criada na raiz.
-- Validações executadas com sucesso após a criação:
+- Sprint 1 — base Supabase (código, sem ligação a projecto real ainda):
+  - Dependências `@supabase/supabase-js` e `@supabase/ssr` instaladas.
+  - Clientes separados em `src/lib/supabase/client.ts` (browser) e `src/lib/supabase/server.ts` (servidor).
+  - Renovação de sessão SSR em `src/proxy.ts` + `src/lib/supabase/session.ts`.
+  - `.env.example` com `NEXT_PUBLIC_SUPABASE_URL` e `NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY` (sem valores).
+  - Migração `supabase/migrations/20260715120000_profiles.sql`: `profiles`, RLS, políticas e trigger de criação de perfil. Ainda **não aplicada** a nenhum projecto.
+- Validações executadas com sucesso após cada alteração:
   - `npm run lint`
   - `npm run build`
 
@@ -24,8 +30,10 @@ Permitir que o Claude Code continue o Despact sem voltar a decidir requisitos j�
 | Linguagem | TypeScript estrito. |
 | Interface | Tailwind CSS 4; shadcn/ui ainda não instalado. |
 | Qualidade | ESLint configurado; lint e build passam. |
-| Supabase/Auth | Ainda não configurados. |
-| Base de dados/migrações | Ainda não existem. |
+| Supabase (código) | Clientes browser/servidor e renovação de sessão SSR criados; `@supabase/ssr` e `@supabase/supabase-js` instalados. Falta ligar a um projecto real. |
+| Supabase/Auth | Fluxo de autenticação (login/registo/logout) ainda não implementado. |
+| Base de dados/migrações | Migração `profiles` escrita e versionada; ainda não aplicada a nenhum projecto. Estratégia: Supabase CLI, ficheiros versionados. |
+| Ambientes | Estratégia acordada: projecto Supabase de desenvolvimento agora (também usado por previews); projecto de produção criado no passo de deploy. |
 | Deploy Vercel | Ainda não configurado. |
 
 ### Ficheiros relevantes
@@ -59,20 +67,31 @@ O esqueleto apresenta intencionalmente uma página mínima. Não deve ser transf
 
 Consultar `DECISIONS.md`, `ARCHITECTURE.md` e `DATABASE.md` para justificação e detalhe.
 
-## Próximo passo autorizado — Sprint 1: ambientes e Supabase
+## Sprint 1 — ambientes e Supabase: estado
 
-Antes de implementar autenticação, o Claude Code deve explicar e acordar estas decisões:
+O sub-passo de ambientes e base Supabase está concretizado no código:
 
-1. Criar um projecto Supabase de desenvolvimento e definir o processo para preview/produção.
-2. Instalar apenas `@supabase/supabase-js` e `@supabase/ssr` nas versões compatíveis actuais.
-3. Adicionar `.env.example` sem valores reais, com:
-   - `NEXT_PUBLIC_SUPABASE_URL`
-   - `NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY`
-4. Criar clientes Supabase separados para browser e servidor sob `src/lib/supabase/`.
-5. Criar a primeira migração apenas para a base de identidade/perfil, RLS e políticas de `profiles`; não criar tabelas financeiras ainda.
-6. Configurar a renovação de sessão conforme a documentação SSR actual do Supabase.
+1. ~~Instalar `@supabase/supabase-js` e `@supabase/ssr`~~ — feito.
+2. ~~`.env.example` sem valores, com `NEXT_PUBLIC_SUPABASE_URL` e `NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY`~~ — feito.
+3. ~~Clientes separados para browser e servidor sob `src/lib/supabase/`~~ — feito.
+4. ~~Primeira migração de identidade/perfil (`profiles`, RLS, políticas)~~ — escrita e versionada.
+5. ~~Renovação de sessão SSR~~ — feita no `src/proxy.ts` (convenção `proxy` do Next.js 16).
 
-Depois destes pontos, validar lint, build, sessão autenticada e acesso bloqueado a rotas privadas. Só então configurar Vercel e concluir o Sprint 1.
+### Ligação ao projecto real — concluída
+
+1. ~~Criar um projecto Supabase de desenvolvimento~~ — criado; URL e chave publicável estão apenas no `.env.local` (nunca em Git, chat ou documentação). O projecto de produção fica para o passo de deploy.
+2. ~~Ligar a Supabase CLI e aplicar a migração `profiles`~~ — CLI instalada como dependência de desenvolvimento (`npx supabase`), projecto ligado (`supabase link`) e migração aplicada (`supabase db push`); histórico local e remoto sincronizados (`supabase migration list`).
+3. ~~Validar a ligação em execução~~ — servidor de desenvolvimento arrancou com `.env.local`, o proxy contactou o Supabase real (`auth.getUser`) e a página respondeu 200 sem erros.
+4. `supabase/.temp/` (estado local da CLI) foi adicionado ao `.gitignore`.
+
+## Próximo passo autorizado — Sprint 1: autenticação
+
+Com o projecto de desenvolvimento ligado, a migração aplicada e a ligação validada:
+
+1. Implementar registo, início e fim de sessão com Supabase Auth via SSR.
+2. Criar a área autenticada e proteger rotas privadas no `src/proxy.ts` (redireccionar sem sessão).
+3. Validar lint, build, sessão autenticada e acesso bloqueado a rotas privadas.
+4. Só então configurar a Vercel (preview e produção) e concluir o Sprint 1.
 
 ## Procedimento para entregar ao Claude Code
 

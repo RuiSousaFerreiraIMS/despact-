@@ -21,3 +21,6 @@ pnpm-debug.log*
 # Configuração local de ferramentas e alojamento
 .idea/
 .vercel/
+
+# Estado local da Supabase CLI (ligação ao projecto); as migrações são versionadas
+supabase/.temp/
