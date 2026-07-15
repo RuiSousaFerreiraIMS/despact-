@@ -1,5 +1,12 @@
+import { Plus } from "lucide-react";
 import Link from "next/link";
 
+import { FormAlert } from "@/components/form-alert";
+import { Badge } from "@/components/ui/badge";
+import { Button } from "@/components/ui/button";
+import { Card, CardContent } from "@/components/ui/card";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
 import {
   archiveGoal,
   completeGoal,
@@ -9,6 +16,7 @@ import {
 import { listGoals } from "@/features/goals/queries";
 import type { Goal } from "@/features/goals/queries";
 import { formatMinorUnits, minorUnitsToInputValue } from "@/lib/money/format";
+import { cn } from "@/lib/utils";
 
 function formatDate(isoDate: string): string {
   const [year, month, day] = isoDate.split("-");
@@ -32,120 +40,116 @@ function GoalCard({ goal }: { goal: Goal }) {
   const isArchived = goal.status === "archived";
 
   return (
-    <li
-      className={`space-y-3 rounded-md border border-gray-200 p-4 ${
-        isArchived ? "bg-gray-50" : ""
-      }`}
-    >
-      <div className="flex flex-wrap items-start justify-between gap-2">
-        <div>
-          <p className={`font-medium ${isArchived ? "text-gray-500" : ""}`}>
-            {goal.name}
-            {goal.status === "completed" ? (
-              <span className="ml-2 rounded bg-green-100 px-1.5 py-0.5 text-xs text-green-800">
-                Concluído
-              </span>
-            ) : null}
-            {isActive && reached ? (
-              <span className="ml-2 rounded bg-green-100 px-1.5 py-0.5 text-xs text-green-800">
-                Alvo atingido
-              </span>
-            ) : null}
-          </p>
-          <p className="text-sm text-gray-500">
-            {formatMinorUnits(goal.current_amount_minor, goal.currency_code)}{" "}
-            de{" "}
-            {formatMinorUnits(goal.target_amount_minor, goal.currency_code)}
-            {goal.target_date
-              ? ` · até ${formatDate(goal.target_date)}`
-              : ""}
-          </p>
-        </div>
-        <span className="text-lg font-semibold tabular-nums">{percent}%</span>
-      </div>
-
-      <div
-        className="h-2 overflow-hidden rounded-full bg-gray-100"
-        role="progressbar"
-        aria-valuenow={percent}
-        aria-valuemin={0}
-        aria-valuemax={100}
-      >
-        <div
-          className={`h-full rounded-full ${reached ? "bg-green-600" : "bg-gray-900"}`}
-          style={{ width: `${percent}%` }}
-        />
-      </div>
-
-      {isActive ? (
-        <form
-          action={updateGoalProgress.bind(null, goal.id)}
-          className="flex flex-wrap items-center gap-2"
-        >
-          <label htmlFor={`progress-${goal.id}`} className="text-sm">
-            Progresso actual
-          </label>
-          <input
-            id={`progress-${goal.id}`}
-            name="current_amount"
-            type="text"
-            inputMode="decimal"
-            defaultValue={minorUnitsToInputValue(goal.current_amount_minor)}
-            className="w-28 rounded-md border border-gray-300 px-2 py-1.5 text-sm"
-          />
-          <button
-            type="submit"
-            className="rounded-md border border-gray-300 px-3 py-1.5 text-sm hover:bg-gray-50"
-          >
-            Actualizar
-          </button>
-        </form>
-      ) : null}
-
-      <div className="flex flex-wrap gap-4 text-sm">
-        {isActive ? (
-          <>
-            <Link href={`/goals/${goal.id}/edit`} className="py-1 underline">
-              Editar
-            </Link>
-            {reached ? (
-              <form action={completeGoal.bind(null, goal.id)}>
-                <button
-                  type="submit"
-                  className="py-1 text-green-700 underline hover:text-green-900"
-                >
-                  Marcar como concluído
-                </button>
-              </form>
-            ) : null}
-            <form action={archiveGoal.bind(null, goal.id)}>
-              <button
-                type="submit"
-                className="py-1 text-gray-500 underline hover:text-gray-900"
-              >
-                Arquivar
-              </button>
-            </form>
-          </>
-        ) : (
-          <form action={reactivateGoal.bind(null, goal.id)}>
-            <button
-              type="submit"
-              className="py-1 text-gray-500 underline hover:text-gray-900"
+    <Card className={cn(isArchived && "bg-muted/40")}>
+      <CardContent className="space-y-3">
+        <div className="flex flex-wrap items-start justify-between gap-2">
+          <div>
+            <p
+              className={cn(
+                "flex flex-wrap items-center gap-2 font-medium",
+                isArchived && "text-muted-foreground",
+              )}
             >
-              Reactivar
-            </button>
+              {goal.name}
+              {goal.status === "completed" ? (
+                <Badge className="bg-success/15 text-success">Concluído</Badge>
+              ) : null}
+              {isActive && reached ? (
+                <Badge className="bg-success/15 text-success">
+                  Alvo atingido
+                </Badge>
+              ) : null}
+              {isArchived ? <Badge variant="secondary">Arquivado</Badge> : null}
+            </p>
+            <p className="text-sm text-muted-foreground">
+              {formatMinorUnits(goal.current_amount_minor, goal.currency_code)}{" "}
+              de{" "}
+              {formatMinorUnits(goal.target_amount_minor, goal.currency_code)}
+              {goal.target_date ? ` · até ${formatDate(goal.target_date)}` : ""}
+            </p>
+          </div>
+          <span className="font-display text-xl font-semibold tabular-nums">
+            {percent}%
+          </span>
+        </div>
+
+        <div
+          className="h-2 overflow-hidden rounded-full bg-muted"
+          role="progressbar"
+          aria-valuenow={percent}
+          aria-valuemin={0}
+          aria-valuemax={100}
+        >
+          <div
+            className="h-full rounded-full bg-success transition-all"
+            style={{ width: `${percent}%` }}
+          />
+        </div>
+
+        {isActive ? (
+          <form
+            action={updateGoalProgress.bind(null, goal.id)}
+            className="flex flex-wrap items-end gap-2"
+          >
+            <div className="space-y-1.5">
+              <Label htmlFor={`progress-${goal.id}`} className="text-xs">
+                Progresso actual
+              </Label>
+              <Input
+                id={`progress-${goal.id}`}
+                name="current_amount"
+                type="text"
+                inputMode="decimal"
+                defaultValue={minorUnitsToInputValue(
+                  goal.current_amount_minor,
+                )}
+                className="h-9 w-32 font-display tabular-nums"
+              />
+            </div>
+            <Button type="submit" variant="outline">
+              Actualizar
+            </Button>
           </form>
-        )}
-      </div>
-    </li>
+        ) : null}
+
+        <div className="flex flex-wrap gap-1">
+          {isActive ? (
+            <>
+              <Button asChild variant="ghost" size="sm">
+                <Link href={`/goals/${goal.id}/edit`}>Editar</Link>
+              </Button>
+              {reached ? (
+                <form action={completeGoal.bind(null, goal.id)}>
+                  <Button
+                    type="submit"
+                    variant="ghost"
+                    size="sm"
+                    className="text-success hover:text-success"
+                  >
+                    Marcar como concluído
+                  </Button>
+                </form>
+              ) : null}
+              <form action={archiveGoal.bind(null, goal.id)}>
+                <Button type="submit" variant="ghost" size="sm">
+                  Arquivar
+                </Button>
+              </form>
+            </>
+          ) : (
+            <form action={reactivateGoal.bind(null, goal.id)}>
+              <Button type="submit" variant="ghost" size="sm">
+                Reactivar
+              </Button>
+            </form>
+          )}
+        </div>
+      </CardContent>
+    </Card>
   );
 }
 
-/**
- * Objectivos com progresso manual (D-006). A actualização de progresso é
- * inline para manter o gesto frequente sem fricção.
- */
+/** Objectivos com progresso manual (D-006); actualização inline sem fricção. */
 export default async function GoalsPage({
   searchParams,
 }: {
@@ -159,56 +163,60 @@ export default async function GoalsPage({
 
   return (
     <main className="space-y-6">
-      <div className="flex flex-wrap items-center justify-between gap-2">
-        <h1 className="text-xl font-semibold">Objectivos</h1>
-        <Link
-          href="/goals/new"
-          className="rounded-md bg-gray-900 px-4 py-2 text-sm font-medium text-white hover:bg-gray-700"
-        >
-          Novo objectivo
-        </Link>
+      <div className="flex flex-wrap items-center justify-between gap-3">
+        <h1 className="font-display text-2xl font-semibold tracking-tight">
+          Objectivos
+        </h1>
+        <Button asChild>
+          <Link href="/goals/new">
+            <Plus data-icon="inline-start" />
+            Novo objectivo
+          </Link>
+        </Button>
       </div>
 
-      {error ? (
-        <p className="rounded-md border border-red-300 bg-red-50 p-3 text-sm text-red-800">
-          {error}
-        </p>
-      ) : null}
+      {error ? <FormAlert variant="error">{error}</FormAlert> : null}
 
       {goals.length === 0 ? (
-        <p className="rounded-md border border-gray-200 p-6 text-center text-sm text-gray-500">
-          Ainda não tem objectivos. Defina o primeiro — por exemplo um fundo
-          de emergência — e acompanhe o progresso.
-        </p>
+        <Card>
+          <CardContent className="py-10 text-center text-sm text-muted-foreground">
+            Ainda não tem objectivos. Defina o primeiro — por exemplo um fundo
+            de emergência — e acompanhe o progresso.
+          </CardContent>
+        </Card>
       ) : (
         <>
           {active.length > 0 ? (
-            <ul className="space-y-3">
+            <div className="grid grid-cols-1 gap-4 lg:grid-cols-2">
               {active.map((goal) => (
                 <GoalCard key={goal.id} goal={goal} />
               ))}
-            </ul>
+            </div>
           ) : null}
 
           {completed.length > 0 ? (
             <section className="space-y-3">
-              <h2 className="text-sm font-medium text-gray-500">Concluídos</h2>
-              <ul className="space-y-3">
+              <h2 className="text-sm font-medium text-muted-foreground">
+                Concluídos
+              </h2>
+              <div className="grid grid-cols-1 gap-4 lg:grid-cols-2">
                 {completed.map((goal) => (
                   <GoalCard key={goal.id} goal={goal} />
                 ))}
-              </ul>
+              </div>
             </section>
           ) : null}
 
           {archived.length > 0 ? (
             <section className="space-y-3">
-              <h2 className="text-sm font-medium text-gray-500">Arquivados</h2>
-              <ul className="space-y-3">
+              <h2 className="text-sm font-medium text-muted-foreground">
+                Arquivados
+              </h2>
+              <div className="grid grid-cols-1 gap-4 lg:grid-cols-2">
                 {archived.map((goal) => (
                   <GoalCard key={goal.id} goal={goal} />
                 ))}
-              </ul>
+              </div>
             </section>
           ) : null}
         </>

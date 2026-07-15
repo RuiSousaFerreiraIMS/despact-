@@ -1,6 +1,11 @@
 import Link from "next/link";
 import { notFound } from "next/navigation";
 
+import { FormAlert } from "@/components/form-alert";
+import { Button } from "@/components/ui/button";
+import { Card, CardContent } from "@/components/ui/card";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
 import { renameCategory } from "@/features/categories/actions";
 import { getCategory } from "@/features/categories/queries";
 import { CATEGORY_TYPE_LABELS } from "@/features/categories/validation";
@@ -22,52 +27,46 @@ export default async function EditCategoryPage({
 
   return (
     <main className="mx-auto max-w-md space-y-6">
-      <h1 className="text-xl font-semibold">Renomear categoria</h1>
+      <h1 className="font-display text-2xl font-semibold tracking-tight">
+        Renomear categoria
+      </h1>
 
-      {error ? (
-        <p className="rounded-md border border-red-300 bg-red-50 p-3 text-sm text-red-800">
-          {error}
-        </p>
-      ) : null}
+      {error ? <FormAlert variant="error">{error}</FormAlert> : null}
 
-      <form action={renameCategory.bind(null, id)} className="space-y-4">
-        <div className="space-y-1">
-          <label htmlFor="name" className="block text-sm font-medium">
-            Nome
-          </label>
-          <input
-            id="name"
-            name="name"
-            type="text"
-            required
-            defaultValue={category.name}
-            className="w-full rounded-md border border-gray-300 px-3 py-2 text-sm"
-          />
-        </div>
+      <Card>
+        <CardContent>
+          <form action={renameCategory.bind(null, id)} className="space-y-4">
+            <div className="space-y-1.5">
+              <Label htmlFor="name">Nome</Label>
+              <Input
+                id="name"
+                name="name"
+                type="text"
+                required
+                defaultValue={category.name}
+                className="h-10"
+              />
+            </div>
 
-        <div className="space-y-1">
-          <span className="block text-sm font-medium">Tipo</span>
-          <p className="rounded-md border border-gray-200 bg-gray-50 px-3 py-2 text-sm text-gray-500">
-            {CATEGORY_TYPE_LABELS[category.type]} — não pode ser alterado
-            depois da criação.
-          </p>
-        </div>
+            <div className="space-y-1.5">
+              <Label>Tipo</Label>
+              <p className="rounded-lg border border-border bg-muted px-3 py-2 text-sm text-muted-foreground">
+                {CATEGORY_TYPE_LABELS[category.type]} — não pode ser alterado
+                depois da criação.
+              </p>
+            </div>
 
-        <div className="flex flex-wrap gap-3">
-          <button
-            type="submit"
-            className="rounded-md bg-gray-900 px-4 py-2 text-sm font-medium text-white hover:bg-gray-700"
-          >
-            Guardar
-          </button>
-          <Link
-            href="/categories"
-            className="rounded-md border border-gray-300 px-4 py-2 text-sm hover:bg-gray-50"
-          >
-            Cancelar
-          </Link>
-        </div>
-      </form>
+            <div className="flex flex-wrap gap-2 pt-1">
+              <Button type="submit" size="lg">
+                Guardar
+              </Button>
+              <Button asChild variant="outline" size="lg">
+                <Link href="/categories">Cancelar</Link>
+              </Button>
+            </div>
+          </form>
+        </CardContent>
+      </Card>
     </main>
   );
 }

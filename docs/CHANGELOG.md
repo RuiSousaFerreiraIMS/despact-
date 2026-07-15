@@ -84,6 +84,8 @@
 - Shell de navegação novo: sidebar escura fixa no desktop; no mobile, cabeçalho compacto e barra de separadores inferior com acção central destacada para novo movimento.
 - Painel redesenhado: património líquido como elemento principal, cartões de resumo do mês com ícones, listas de contas e objectivos em cartões.
 - Verificação visual por inspecção em viewport desktop e mobile; cálculos do painel confirmados com dados de demonstração.
+- Identidade aplicada a todas as páginas: autenticação, contas, categorias, movimentos, transferências e objectivos — cartões, botões, inputs, selects nativos estilizados, badges e alertas de formulário consistentes.
+- Componentes partilhados novos: `NativeSelect` (selects de servidor com estilo do tema) e `FormAlert` (mensagens de erro/sucesso).
 
 ### Sprint 2 concluído
 

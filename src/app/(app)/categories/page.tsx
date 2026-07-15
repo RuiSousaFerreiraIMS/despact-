@@ -1,5 +1,12 @@
 import Link from "next/link";
 
+import { FormAlert } from "@/components/form-alert";
+import { Badge } from "@/components/ui/badge";
+import { Button } from "@/components/ui/button";
+import { Card, CardContent } from "@/components/ui/card";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import { NativeSelect } from "@/components/ui/native-select";
 import {
   archiveCategory,
   createCategory,
@@ -11,74 +18,75 @@ import {
   CATEGORY_TYPES,
   CATEGORY_TYPE_LABELS,
 } from "@/features/categories/validation";
+import { cn } from "@/lib/utils";
 
 function CategoryList({
   title,
   categories,
+  archived,
 }: {
   title: string;
   categories: Category[];
+  archived?: boolean;
 }) {
   if (categories.length === 0) {
     return null;
   }
 
   return (
-    <section className="space-y-2">
-      <h2 className="text-sm font-medium text-gray-500">{title}</h2>
-      <ul className="divide-y divide-gray-200 rounded-md border border-gray-200">
-        {categories.map((category) => (
-          <li
-            key={category.id}
-            className="flex flex-wrap items-center justify-between gap-2 p-3"
-          >
-            <span
-              className={
-                category.archived_at ? "text-gray-400" : "font-medium"
-              }
+    <section className="space-y-3">
+      <h2 className="text-sm font-medium text-muted-foreground">{title}</h2>
+      <Card className={cn("py-0", archived && "bg-muted/40")}>
+        <ul className="divide-y divide-border">
+          {categories.map((category) => (
+            <li
+              key={category.id}
+              className="flex flex-wrap items-center justify-between gap-2 px-5 py-3"
             >
-              {category.name}
-            </span>
-            <span className="flex gap-4 text-sm">
-              {category.archived_at === null ? (
-                <>
-                  <Link
-                    href={`/categories/${category.id}/edit`}
-                    className="py-1 underline"
-                  >
-                    Renomear
-                  </Link>
-                  <form action={archiveCategory.bind(null, category.id)}>
-                    <button
-                      type="submit"
-                      className="py-1 text-gray-500 underline hover:text-gray-900"
-                    >
-                      Arquivar
-                    </button>
+              <span
+                className={cn(
+                  "flex items-center gap-2 font-medium",
+                  archived && "text-muted-foreground",
+                )}
+              >
+                {category.name}
+                {archived ? (
+                  <Badge variant="secondary">
+                    {CATEGORY_TYPE_LABELS[category.type]}
+                  </Badge>
+                ) : null}
+              </span>
+              <span className="flex gap-1">
+                {archived ? (
+                  <form action={unarchiveCategory.bind(null, category.id)}>
+                    <Button type="submit" variant="ghost" size="sm">
+                      Reactivar
+                    </Button>
                   </form>
-                </>
-              ) : (
-                <form action={unarchiveCategory.bind(null, category.id)}>
-                  <button
-                    type="submit"
-                    className="py-1 text-gray-500 underline hover:text-gray-900"
-                  >
-                    Reactivar
-                  </button>
-                </form>
-              )}
-            </span>
-          </li>
-        ))}
-      </ul>
+                ) : (
+                  <>
+                    <Button asChild variant="ghost" size="sm">
+                      <Link href={`/categories/${category.id}/edit`}>
+                        Renomear
+                      </Link>
+                    </Button>
+                    <form action={archiveCategory.bind(null, category.id)}>
+                      <Button type="submit" variant="ghost" size="sm">
+                        Arquivar
+                      </Button>
+                    </form>
+                  </>
+                )}
+              </span>
+            </li>
+          ))}
+        </ul>
+      </Card>
     </section>
   );
 }
 
-/**
- * Gestão de categorias: criação inline, listas separadas por tipo (D-005) e
- * secção de arquivadas. O tipo é fixo após a criação.
- */
+/** Gestão de categorias: criação inline, listas por tipo (D-005). */
 export default async function CategoriesPage({
   searchParams,
 }: {
@@ -99,68 +107,65 @@ export default async function CategoriesPage({
 
   return (
     <main className="space-y-6">
-      <h1 className="text-xl font-semibold">Categorias</h1>
+      <h1 className="font-display text-2xl font-semibold tracking-tight">
+        Categorias
+      </h1>
 
-      {error ? (
-        <p className="rounded-md border border-red-300 bg-red-50 p-3 text-sm text-red-800">
-          {error}
-        </p>
-      ) : null}
+      {error ? <FormAlert variant="error">{error}</FormAlert> : null}
 
-      <form
-        action={createCategory}
-        className="flex flex-wrap items-end gap-3 rounded-md border border-gray-200 p-4"
-      >
-        <div className="min-w-40 flex-1 space-y-1">
-          <label htmlFor="name" className="block text-sm font-medium">
-            Nova categoria
-          </label>
-          <input
-            id="name"
-            name="name"
-            type="text"
-            required
-            placeholder="Ex.: Supermercado"
-            className="w-full rounded-md border border-gray-300 px-3 py-2 text-sm"
-          />
-        </div>
-        <div className="space-y-1">
-          <label htmlFor="type" className="block text-sm font-medium">
-            Tipo
-          </label>
-          <select
-            id="type"
-            name="type"
-            required
-            defaultValue="expense"
-            className="rounded-md border border-gray-300 px-3 py-2 text-sm"
+      <Card>
+        <CardContent>
+          <form
+            action={createCategory}
+            className="flex flex-wrap items-end gap-3"
           >
-            {CATEGORY_TYPES.map((type) => (
-              <option key={type} value={type}>
-                {CATEGORY_TYPE_LABELS[type]}
-              </option>
-            ))}
-          </select>
-        </div>
-        <button
-          type="submit"
-          className="rounded-md bg-gray-900 px-4 py-2 text-sm font-medium text-white hover:bg-gray-700"
-        >
-          Criar
-        </button>
-      </form>
+            <div className="min-w-44 flex-1 space-y-1.5">
+              <Label htmlFor="name">Nova categoria</Label>
+              <Input
+                id="name"
+                name="name"
+                type="text"
+                required
+                placeholder="Ex.: Supermercado"
+                className="h-10"
+              />
+            </div>
+            <div className="space-y-1.5">
+              <Label htmlFor="type">Tipo</Label>
+              <NativeSelect
+                id="type"
+                name="type"
+                required
+                defaultValue="expense"
+                className="h-10 w-36"
+              >
+                {CATEGORY_TYPES.map((type) => (
+                  <option key={type} value={type}>
+                    {CATEGORY_TYPE_LABELS[type]}
+                  </option>
+                ))}
+              </NativeSelect>
+            </div>
+            <Button type="submit" size="lg">
+              Criar
+            </Button>
+          </form>
+        </CardContent>
+      </Card>
 
       {activeExpense.length === 0 && activeIncome.length === 0 ? (
-        <p className="rounded-md border border-gray-200 p-6 text-center text-sm text-gray-500">
-          Ainda não tem categorias. Crie algumas para classificar as suas
-          transacções — por exemplo &quot;Supermercado&quot; (despesa) ou
-          &quot;Salário&quot; (receita).
-        </p>
+        <Card>
+          <CardContent className="py-10 text-center text-sm text-muted-foreground">
+            Ainda não tem categorias. Crie algumas para classificar as suas
+            transacções — por exemplo &quot;Supermercado&quot; (despesa) ou
+            &quot;Salário&quot; (receita).
+          </CardContent>
+        </Card>
       ) : null}
 
       <CategoryList title="Despesas" categories={activeExpense} />
       <CategoryList title="Receitas" categories={activeIncome} />
-      <CategoryList title="Arquivadas" categories={archived} />
+      <CategoryList title="Arquivadas" categories={archived} archived />
     </main>
   );
 }
