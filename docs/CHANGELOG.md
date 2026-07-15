@@ -54,3 +54,16 @@
 - Utilitário `src/lib/money/` para formatação pt-PT e conversão texto↔unidades mínimas sem vírgula flutuante.
 - Layout autenticado mobile-first com navegação e terminar sessão no cabeçalho.
 - A moeda de uma conta é fixa após a criação (coerência com transacções futuras).
+
+### Sprint 2 — categorias
+
+- Funcionalidade de categorias em `src/features/categories/`: criação inline em `/categories`, listas separadas por receita/despesa, renomear, arquivar e reactivar.
+- O tipo de uma categoria é fixo após a criação (coerência com transacções já classificadas).
+
+### Sprint 2 — transacções
+
+- Funcionalidade de transacções em `src/features/transactions/`: registar receita/despesa, editar, eliminar; transferências criadas e eliminadas pelas funções atómicas da base de dados.
+- O utilizador introduz sempre montantes positivos; o sinal deriva do tipo no servidor (D-003).
+- Formulário de transacção como componente cliente (único até agora) para filtrar categorias pelo tipo em tempo real.
+- Histórico `/transactions` com os dois lados das transferências identificados; eliminar um lado elimina o par.
+- Teste E2E das regras financeiras na base de dados de desenvolvimento: 20/20 verificações (sinais, categoria compatível, moeda, conta arquivada, transferência simétrica, saldos derivados, RLS entre utilizadores).
