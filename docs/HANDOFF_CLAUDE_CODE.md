@@ -129,15 +129,31 @@ Pendência antes de haver utilizadores reais além do proprietário: SMTP (por e
 - Em desktop o layout fica demasiado "esticado"/vazio; melhorar o uso do espaço em ecrãs largos.
 - Visual e interacção têm margem de melhoria; a base shadcn/ui e uma passagem de design entram com o painel (Sprint 3) e o polimento (Sprint 4).
 
-## Sprint 3 — em curso
+## Sprint 3 — CONCLUÍDO
 
 1. ~~Migração de `goals`~~ — `20260715160000_goals.sql`, aplicada ao dev; verificada por E2E (8/8).
 2. ~~Funcionalidade de objectivos~~ — `/goals`, `/goals/new`, `/goals/[id]/edit`; progresso manual inline; estados concluído/arquivado.
 3. ~~Património líquido~~ — no painel, pela convenção D-002 (contas arquivadas continuam a contar, conforme `DATABASE.md`).
 4. ~~Painel~~ — página inicial com património, resumo do mês (sem transferências), contas e objectivos; layout alargado em desktop (feedback tratado em parte). A base shadcn/ui ficou para o polimento do Sprint 4, por decisão de gestão de risco (instalação interactiva e diff grande).
-5. Aplicar a migração `goals` a produção e validar critérios de saída. ← **requer o utilizador** (teste interactivo e `supabase link` para produção).
+5. ~~Produção~~ — migração `goals` aplicada (4/4 sincronizadas); merge em `main` e deploy verificados.
+
+### Critérios de saída do Sprint 3 (ROADMAP.md)
+
+- O património líquido resulta da convenção do Sprint 0 (D-002) — soma dos saldos derivados, dívidas negativas.
+- O painel prioriza indicadores de decisão antes de detalhe histórico — património → mês corrente → contas → objectivos.
+- Objectivos apresentam progresso e data-alvo quando definida — barra de progresso e data no cartão.
 
 Lembrete operacional: depois de qualquer operação com produção, voltar a apontar a CLI ao projecto de desenvolvimento (`npx supabase link --project-ref <ref-dev>`).
+
+## Próximo passo autorizado — Sprint 4: insights e polimento
+
+O polimento visual é o tema central deste sprint, respondendo ao feedback do proprietário (interface utilitária, pouco apelativa). Unidades previstas:
+
+1. Base shadcn/ui e passagem de design: hierarquia visual, espaçamento, estados vazios, consistência entre páginas, desktop e mobile.
+2. Insights determinísticos e explicáveis (D-007): regras calculadas sobre dados existentes, com explicação da regra e do período; sem tabela persistida, sem IA.
+3. Revisão de estados vazios, erros e carregamentos.
+4. Revisão final de acessibilidade, desempenho e segurança.
+5. Validar critérios de saída e fechar o MVP.
 
 ## Procedimento para entregar ao Claude Code
 

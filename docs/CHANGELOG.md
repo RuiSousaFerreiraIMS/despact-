@@ -75,6 +75,7 @@
 - Painel na página inicial: património líquido (D-002, soma dos saldos derivados; dívidas negativas), resumo do mês (receitas/despesas/poupança, transferências excluídas), contas e objectivos activos.
 - Layout alargado (`max-w-5xl`) e grelha de 2 colunas em desktop, em resposta ao feedback do proprietário.
 - Teste E2E de `goals` na base de dados de desenvolvimento: 8/8 verificações.
+- Migração `goals` aplicada a produção (4/4 sincronizadas); merge e deploy verificados. Sprint 3 concluído.
 
 ### Sprint 2 concluído
 
