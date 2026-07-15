@@ -25,6 +25,12 @@ export default function AppLayout({
             <Link href="/accounts" className="py-2 hover:underline">
               Contas
             </Link>
+            <Link href="/categories" className="py-2 hover:underline">
+              Categorias
+            </Link>
+            <Link href="/transactions" className="py-2 hover:underline">
+              Transacções
+            </Link>
           </nav>
           <form action={logout} className="ml-auto">
             <button
