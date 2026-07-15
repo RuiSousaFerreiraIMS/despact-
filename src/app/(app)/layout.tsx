@@ -17,7 +17,7 @@ export default function AppLayout({
   return (
     <div className="min-h-screen">
       <header className="border-b border-gray-200">
-        <div className="mx-auto flex max-w-3xl flex-wrap items-center gap-x-4 gap-y-2 px-4 py-3">
+        <div className="mx-auto flex max-w-5xl flex-wrap items-center gap-x-4 gap-y-2 px-4 py-3">
           <Link href="/" className="text-base font-semibold">
             Despact
           </Link>
@@ -31,6 +31,9 @@ export default function AppLayout({
             <Link href="/transactions" className="py-2 hover:underline">
               Transacções
             </Link>
+            <Link href="/goals" className="py-2 hover:underline">
+              Objectivos
+            </Link>
           </nav>
           <form action={logout} className="ml-auto">
             <button
@@ -42,7 +45,7 @@ export default function AppLayout({
           </form>
         </div>
       </header>
-      <div className="mx-auto max-w-3xl px-4 py-6">{children}</div>
+      <div className="mx-auto max-w-5xl px-4 py-6">{children}</div>
     </div>
   );
 }

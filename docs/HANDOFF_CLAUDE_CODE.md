@@ -129,15 +129,13 @@ Pendência antes de haver utilizadores reais além do proprietário: SMTP (por e
 - Em desktop o layout fica demasiado "esticado"/vazio; melhorar o uso do espaço em ecrãs largos.
 - Visual e interacção têm margem de melhoria; a base shadcn/ui e uma passagem de design entram com o painel (Sprint 3) e o polimento (Sprint 4).
 
-## Próximo passo autorizado — Sprint 3: painel, objectivos e património
+## Sprint 3 — em curso
 
-Antes de implementar, confirmar as decisões relevantes (D-002 para património, D-006 para objectivos) e explicar a arquitectura. Unidades previstas:
-
-1. Migração de `goals` conforme `DATABASE.md`.
-2. Funcionalidade de objectivos (criar, acompanhar progresso manual, estados).
-3. Património líquido pela convenção D-002 (soma dos saldos derivados).
-4. Painel orientado à pergunta "Como estou?", com prioridade aos indicadores de decisão; introduzir a base shadcn/ui e tratar o feedback visual acima.
-5. Aplicar migrações a produção e validar critérios de saída.
+1. ~~Migração de `goals`~~ — `20260715160000_goals.sql`, aplicada ao dev; verificada por E2E (8/8).
+2. ~~Funcionalidade de objectivos~~ — `/goals`, `/goals/new`, `/goals/[id]/edit`; progresso manual inline; estados concluído/arquivado.
+3. ~~Património líquido~~ — no painel, pela convenção D-002 (contas arquivadas continuam a contar, conforme `DATABASE.md`).
+4. ~~Painel~~ — página inicial com património, resumo do mês (sem transferências), contas e objectivos; layout alargado em desktop (feedback tratado em parte). A base shadcn/ui ficou para o polimento do Sprint 4, por decisão de gestão de risco (instalação interactiva e diff grande).
+5. Aplicar a migração `goals` a produção e validar critérios de saída. ← **requer o utilizador** (teste interactivo e `supabase link` para produção).
 
 Lembrete operacional: depois de qualquer operação com produção, voltar a apontar a CLI ao projecto de desenvolvimento (`npx supabase link --project-ref <ref-dev>`).
 
