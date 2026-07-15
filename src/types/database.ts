@@ -80,6 +80,45 @@ export type Database = {
         }
         Relationships: []
       }
+      goals: {
+        Row: {
+          created_at: string
+          currency_code: string
+          current_amount_minor: number
+          id: string
+          name: string
+          status: Database["public"]["Enums"]["goal_status"]
+          target_amount_minor: number
+          target_date: string | null
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          currency_code: string
+          current_amount_minor?: number
+          id?: string
+          name: string
+          status?: Database["public"]["Enums"]["goal_status"]
+          target_amount_minor: number
+          target_date?: string | null
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          currency_code?: string
+          current_amount_minor?: number
+          id?: string
+          name?: string
+          status?: Database["public"]["Enums"]["goal_status"]
+          target_amount_minor?: number
+          target_date?: string | null
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
       profiles: {
         Row: {
           created_at: string
@@ -205,6 +244,7 @@ export type Database = {
     Enums: {
       account_type: "cash" | "current" | "savings" | "credit_card" | "loan"
       category_type: "income" | "expense"
+      goal_status: "active" | "completed" | "archived"
       transaction_kind: "income" | "expense" | "transfer"
     }
     CompositeTypes: {
@@ -335,6 +375,7 @@ export const Constants = {
     Enums: {
       account_type: ["cash", "current", "savings", "credit_card", "loan"],
       category_type: ["income", "expense"],
+      goal_status: ["active", "completed", "archived"],
       transaction_kind: ["income", "expense", "transfer"],
     },
   },

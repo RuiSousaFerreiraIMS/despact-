@@ -68,6 +68,14 @@
 - Histórico `/transactions` com os dois lados das transferências identificados; eliminar um lado elimina o par.
 - Teste E2E das regras financeiras na base de dados de desenvolvimento: 20/20 verificações (sinais, categoria compatível, moeda, conta arquivada, transferência simétrica, saldos derivados, RLS entre utilizadores).
 
+### Sprint 3 — objectivos, património e painel
+
+- Migração `goals` (D-006): alvo positivo, progresso manual não negativo, estados `active`/`completed`/`archived`, RLS sem política de DELETE.
+- Funcionalidade de objectivos em `src/features/goals/`: criar, editar, actualizar progresso inline, concluir, arquivar e reactivar; barra de progresso acessível.
+- Painel na página inicial: património líquido (D-002, soma dos saldos derivados; dívidas negativas), resumo do mês (receitas/despesas/poupança, transferências excluídas), contas e objectivos activos.
+- Layout alargado (`max-w-5xl`) e grelha de 2 colunas em desktop, em resposta ao feedback do proprietário.
+- Teste E2E de `goals` na base de dados de desenvolvimento: 8/8 verificações.
+
 ### Sprint 2 concluído
 
 - Migrações financeiras aplicadas a produção pela mesma ordem que em desenvolvimento (3/3 sincronizadas).
