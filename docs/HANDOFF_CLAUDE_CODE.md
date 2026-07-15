@@ -84,14 +84,27 @@ O sub-passo de ambientes e base Supabase está concretizado no código:
 3. ~~Validar a ligação em execução~~ — servidor de desenvolvimento arrancou com `.env.local`, o proxy contactou o Supabase real (`auth.getUser`) e a página respondeu 200 sem erros.
 4. `supabase/.temp/` (estado local da CLI) foi adicionado ao `.gitignore`.
 
-## Próximo passo autorizado — Sprint 1: autenticação
+## Sprint 1 — autenticação: estado
 
-Com o projecto de desenvolvimento ligado, a migração aplicada e a ligação validada:
+1. ~~Registo, início e fim de sessão com Supabase Auth via SSR~~ — implementados (`/login`, `/signup`, Server Actions, `/auth/confirm`).
+2. ~~Área autenticada e protecção de rotas privadas~~ — a raiz `/` é a página autenticada mínima; o proxy redirecciona sem sessão para `/login` (verificado: `GET /` sem sessão responde 307 → `/login`).
+3. Lint e build passam.
 
-1. Implementar registo, início e fim de sessão com Supabase Auth via SSR.
-2. Criar a área autenticada e proteger rotas privadas no `src/proxy.ts` (redireccionar sem sessão).
-3. Validar lint, build, sessão autenticada e acesso bloqueado a rotas privadas.
-4. Só então configurar a Vercel (preview e produção) e concluir o Sprint 1.
+### Configuração manual pendente no painel Supabase
+
+- Em Authentication → Email Templates → "Confirm signup", substituir o link por
+  `{{ .SiteURL }}/auth/confirm?token_hash={{ .TokenHash }}&type=email`
+  para que a confirmação use o fluxo SSR (`verifyOtp`) da aplicação.
+- Confirmar que o Site URL (Authentication → URL Configuration) é `http://localhost:3000` durante o desenvolvimento.
+- Testar o ciclo completo: registo → e-mail de confirmação → sessão → linha criada em `profiles` → logout.
+
+## Próximo passo autorizado — Sprint 1: deploy
+
+Com a autenticação validada de ponta a ponta:
+
+1. Configurar o projecto na Vercel (previews e produção) com as variáveis de ambiente definidas no painel da Vercel, nunca versionadas.
+2. Criar o projecto Supabase de produção e aplicar as migrações pela mesma ordem.
+3. Validar os critérios de saída do Sprint 1 no `ROADMAP.md` e fechar o sprint.
 
 ## Procedimento para entregar ao Claude Code
 

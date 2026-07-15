@@ -9,9 +9,19 @@ import { NextResponse, type NextRequest } from "next/server";
  * no proxy (ver `src/proxy.ts`), lê a sessão dos cookies do pedido e reescreve
  * os cookies actualizados na resposta.
  *
- * A protecção de rotas privadas (redireccionar utilizadores sem sessão) será
- * acrescentada no passo de autenticação; aqui apenas mantemos a sessão fresca.
+ * Também protege as rotas privadas: sem sessão, qualquer caminho fora da área
+ * pública redirecciona para /login. Isto melhora a experiência, mas a barreira
+ * de segurança efectiva continua a ser a RLS na base de dados.
  */
+
+/** Caminhos acessíveis sem sessão iniciada. */
+const PUBLIC_PATHS = ["/login", "/signup", "/auth"];
+
+function isPublicPath(pathname: string): boolean {
+  return PUBLIC_PATHS.some(
+    (path) => pathname === path || pathname.startsWith(`${path}/`),
+  );
+}
 export async function updateSession(request: NextRequest) {
   let supabaseResponse = NextResponse.next({ request });
 
@@ -39,7 +49,27 @@ export async function updateSession(request: NextRequest) {
   // IMPORTANTE: não colocar código entre `createServerClient` e `getUser`.
   // `getUser` revalida o token junto do servidor de autenticação e é o que
   // desencadeia a renovação da sessão.
-  await supabase.auth.getUser();
+  const {
+    data: { user },
+  } = await supabase.auth.getUser();
+
+  const { pathname } = request.nextUrl;
+
+  // Sem sessão, só a área pública é acessível.
+  if (!user && !isPublicPath(pathname)) {
+    const url = request.nextUrl.clone();
+    url.pathname = "/login";
+    url.search = "";
+    return NextResponse.redirect(url);
+  }
+
+  // Com sessão, as páginas de entrada deixam de fazer sentido.
+  if (user && (pathname === "/login" || pathname === "/signup")) {
+    const url = request.nextUrl.clone();
+    url.pathname = "/";
+    url.search = "";
+    return NextResponse.redirect(url);
+  }
 
   return supabaseResponse;
 }

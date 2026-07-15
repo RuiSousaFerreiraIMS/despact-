@@ -19,3 +19,11 @@
 - Criada a primeira migração (`supabase/migrations/20260715120000_profiles.sql`): tabela `profiles`, RLS, políticas por utilizador e criação automática de perfil por trigger. Sem tabelas financeiras.
 - Instalada a Supabase CLI como dependência de desenvolvimento; projecto de desenvolvimento ligado e migração `profiles` aplicada via `supabase db push`.
 - Ignorado `supabase/.temp/` (estado local da CLI) no Git.
+
+### Autenticação
+
+- Páginas públicas de início de sessão (`/login`) e registo (`/signup`) como componentes de servidor, com Server Actions para login, registo e logout.
+- Confirmação de e-mail via route handler `/auth/confirm` (`verifyOtp` com `token_hash`).
+- Protecção de rotas no proxy: sem sessão, caminhos privados redireccionam para `/login`; com sessão, `/login` e `/signup` redireccionam para `/`.
+- Página inicial autenticada mínima com identificação do utilizador e terminar sessão; revalida a sessão no servidor.
+- Metadata da aplicação actualizada (título "Despact", `lang="pt"`).
