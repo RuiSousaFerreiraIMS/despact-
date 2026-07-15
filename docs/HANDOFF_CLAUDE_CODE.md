@@ -90,13 +90,14 @@ O sub-passo de ambientes e base Supabase está concretizado no código:
 2. ~~Área autenticada e protecção de rotas privadas~~ — a raiz `/` é a página autenticada mínima; o proxy redirecciona sem sessão para `/login` (verificado: `GET /` sem sessão responde 307 → `/login`).
 3. Lint e build passam.
 
-### Configuração manual pendente no painel Supabase
+### Configuração de e-mail — decisão de desenvolvimento
 
-- Em Authentication → Email Templates → "Confirm signup", substituir o link por
+- O Supabase exige SMTP próprio para enviar e-mails de autenticação; por isso, no projecto de **desenvolvimento** a opção "Confirm email" foi desactivada (Authentication → Sign In / Providers → Email). O registo cria sessão imediata; o código em `src/app/(auth)/actions.ts` suporta ambos os modos.
+- **Obrigatório antes de produção:** configurar um fornecedor SMTP (por exemplo Resend), reactivar "Confirm email" e actualizar o template "Confirm signup" para
   `{{ .SiteURL }}/auth/confirm?token_hash={{ .TokenHash }}&type=email`
-  para que a confirmação use o fluxo SSR (`verifyOtp`) da aplicação.
+  (o route handler `/auth/confirm` já está implementado e pronto).
 - Confirmar que o Site URL (Authentication → URL Configuration) é `http://localhost:3000` durante o desenvolvimento.
-- Testar o ciclo completo: registo → e-mail de confirmação → sessão → linha criada em `profiles` → logout.
+- Testar o ciclo completo: registo → sessão imediata → linha criada em `profiles` → logout → rota privada barrada.
 
 ## Próximo passo autorizado — Sprint 1: deploy
 
