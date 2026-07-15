@@ -113,11 +113,16 @@ Pendência antes de haver utilizadores reais além do proprietário: SMTP (por e
 
 Seguir `DATABASE.md` e `DECISIONS.md` sem reinterpretar. Unidades previstas, cada uma com lint/build/commit:
 
-1. Migração financeira: enums, `accounts`, `categories`, `transactions`, RLS, integridade entre linhas (mesmo `user_id`, categoria compatível, conta não arquivada), índices e funções de transferência atómica.
-2. Funcionalidade de contas (listar, criar, editar, arquivar).
-3. Funcionalidade de categorias.
-4. Funcionalidade de transacções, incluindo transferências pela função PostgreSQL.
-5. Aplicar migrações a produção e validar critérios de saída do sprint.
+1. ~~Migração financeira~~ — concluída (`20260715140000_financial_core.sql`) e aplicada ao dev; produção no fecho do sprint.
+2. ~~Funcionalidade de contas~~ — concluída: `/accounts` (listar com saldo derivado, criar, editar, arquivar/reactivar), módulo `src/features/accounts/`, utilitário `src/lib/money/`, view `account_balances`, tipos gerados do esquema.
+3. ~~Funcionalidade de categorias~~ — concluída: `/categories` com criação inline, renomear, arquivar/reactivar; tipo fixo após criação.
+4. ~~Funcionalidade de transacções~~ — concluída: `/transactions` (histórico), `/transactions/new`, `/transactions/[id]/edit`, `/transactions/transfer`; sinal derivado do tipo no servidor; transferências pelas funções atómicas. Regras da base de dados verificadas por teste E2E (20/20) no ambiente de desenvolvimento.
+5. Aplicar migrações a produção e validar critérios de saída do sprint. ← **próxima unidade; requer o utilizador** (password da base de dados de produção para o `supabase link`). Teste interactivo dos fluxos feito pelo proprietário: usabilidade aprovada.
+
+### Feedback do proprietário para o polimento (Sprint 3/4)
+
+- Em desktop o layout fica demasiado "esticado"/vazio; melhorar o uso do espaço em ecrãs largos.
+- Visual e interacção têm margem de melhoria; a base shadcn/ui e uma passagem de design entram com o painel (Sprint 3) e o polimento (Sprint 4).
 
 ## Procedimento para entregar ao Claude Code
 
