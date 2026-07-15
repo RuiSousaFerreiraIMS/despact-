@@ -109,20 +109,37 @@ Regra operacional dos ambientes: a máquina local (`.env.local` e o `link` da CL
 
 Pendência antes de haver utilizadores reais além do proprietário: SMTP (por exemplo Resend), reactivar "Confirm email" e actualizar o template conforme a secção de e-mail acima.
 
-## Próximo passo autorizado — Sprint 2: contas, transacções e categorias
+## Sprint 2 — CONCLUÍDO
 
-Seguir `DATABASE.md` e `DECISIONS.md` sem reinterpretar. Unidades previstas, cada uma com lint/build/commit:
+1. ~~Migração financeira~~ — `20260715140000_financial_core.sql`, aplicada a dev e produção.
+2. ~~Funcionalidade de contas~~ — `/accounts` (listar com saldo derivado, criar, editar, arquivar/reactivar), módulo `src/features/accounts/`, utilitário `src/lib/money/`, view `account_balances`, tipos gerados do esquema.
+3. ~~Funcionalidade de categorias~~ — `/categories` com criação inline, renomear, arquivar/reactivar; tipo fixo após criação.
+4. ~~Funcionalidade de transacções~~ — `/transactions` (histórico), `/transactions/new`, `/transactions/[id]/edit`, `/transactions/transfer`; sinal derivado do tipo no servidor; transferências pelas funções atómicas.
+5. ~~Produção~~ — as 3 migrações aplicadas pela mesma ordem em dev e produção; merge em `main` e deploy Vercel verificados.
 
-1. ~~Migração financeira~~ — concluída (`20260715140000_financial_core.sql`) e aplicada ao dev; produção no fecho do sprint.
-2. ~~Funcionalidade de contas~~ — concluída: `/accounts` (listar com saldo derivado, criar, editar, arquivar/reactivar), módulo `src/features/accounts/`, utilitário `src/lib/money/`, view `account_balances`, tipos gerados do esquema.
-3. ~~Funcionalidade de categorias~~ — concluída: `/categories` com criação inline, renomear, arquivar/reactivar; tipo fixo após criação.
-4. ~~Funcionalidade de transacções~~ — concluída: `/transactions` (histórico), `/transactions/new`, `/transactions/[id]/edit`, `/transactions/transfer`; sinal derivado do tipo no servidor; transferências pelas funções atómicas. Regras da base de dados verificadas por teste E2E (20/20) no ambiente de desenvolvimento.
-5. Aplicar migrações a produção e validar critérios de saída do sprint. ← **próxima unidade; requer o utilizador** (password da base de dados de produção para o `supabase link`). Teste interactivo dos fluxos feito pelo proprietário: usabilidade aprovada.
+### Critérios de saída do Sprint 2 (ROADMAP.md)
+
+- Contas, categorias e transacções respeitam `DATABASE.md` — verificado por teste E2E na base de dados (20/20), incluindo integridade entre linhas e chaves compostas.
+- Saldos e transferências calculados correctamente — verificado ao cêntimo pelo E2E (saldos derivados; pares simétricos).
+- RLS impede acesso entre utilizadores — verificado pelo E2E com dois utilizadores.
+- Fluxo de adicionar transacção em <15 segundos — testado e aprovado pelo proprietário.
 
 ### Feedback do proprietário para o polimento (Sprint 3/4)
 
 - Em desktop o layout fica demasiado "esticado"/vazio; melhorar o uso do espaço em ecrãs largos.
 - Visual e interacção têm margem de melhoria; a base shadcn/ui e uma passagem de design entram com o painel (Sprint 3) e o polimento (Sprint 4).
+
+## Próximo passo autorizado — Sprint 3: painel, objectivos e património
+
+Antes de implementar, confirmar as decisões relevantes (D-002 para património, D-006 para objectivos) e explicar a arquitectura. Unidades previstas:
+
+1. Migração de `goals` conforme `DATABASE.md`.
+2. Funcionalidade de objectivos (criar, acompanhar progresso manual, estados).
+3. Património líquido pela convenção D-002 (soma dos saldos derivados).
+4. Painel orientado à pergunta "Como estou?", com prioridade aos indicadores de decisão; introduzir a base shadcn/ui e tratar o feedback visual acima.
+5. Aplicar migrações a produção e validar critérios de saída.
+
+Lembrete operacional: depois de qualquer operação com produção, voltar a apontar a CLI ao projecto de desenvolvimento (`npx supabase link --project-ref <ref-dev>`).
 
 ## Procedimento para entregar ao Claude Code
 

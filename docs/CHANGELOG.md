@@ -67,3 +67,9 @@
 - Formulário de transacção como componente cliente (único até agora) para filtrar categorias pelo tipo em tempo real.
 - Histórico `/transactions` com os dois lados das transferências identificados; eliminar um lado elimina o par.
 - Teste E2E das regras financeiras na base de dados de desenvolvimento: 20/20 verificações (sinais, categoria compatível, moeda, conta arquivada, transferência simétrica, saldos derivados, RLS entre utilizadores).
+
+### Sprint 2 concluído
+
+- Migrações financeiras aplicadas a produção pela mesma ordem que em desenvolvimento (3/3 sincronizadas).
+- Merge em `main` e deploy de produção verificados; rotas privadas protegidas em produção.
+- Critérios de saída do Sprint 2 validados; fluxo de transacção aprovado pelo proprietário.
