@@ -99,13 +99,25 @@ O sub-passo de ambientes e base Supabase está concretizado no código:
 - Confirmar que o Site URL (Authentication → URL Configuration) é `http://localhost:3000` durante o desenvolvimento.
 - Testar o ciclo completo: registo → sessão imediata → linha criada em `profiles` → logout → rota privada barrada.
 
-## Próximo passo autorizado — Sprint 1: deploy
+## Sprint 1 — CONCLUÍDO
 
-Com a autenticação validada de ponta a ponta:
+1. ~~Vercel configurada~~ — produção em `https://despact.vercel.app` a partir de `main`; previews automáticos por branch. Variáveis de ambiente no painel Vercel: produção → projecto Supabase de produção; previews → projecto de desenvolvimento.
+2. ~~Projecto Supabase de produção criado~~ — migração `profiles` aplicada pela mesma ordem via CLI; Site URL configurado para o domínio de produção.
+3. ~~Critérios de saída validados~~ — sessão e logout funcionam em dev e produção; rota privada sem sessão responde 307 → `/login`; builds locais e na Vercel passam; nenhum segredo no repositório ou browser além das chaves publicáveis.
 
-1. Configurar o projecto na Vercel (previews e produção) com as variáveis de ambiente definidas no painel da Vercel, nunca versionadas.
-2. Criar o projecto Supabase de produção e aplicar as migrações pela mesma ordem.
-3. Validar os critérios de saída do Sprint 1 no `ROADMAP.md` e fechar o sprint.
+Regra operacional dos ambientes: a máquina local (`.env.local` e o `link` da CLI) aponta **sempre** ao projecto de desenvolvimento; os valores de produção existem apenas no painel da Vercel.
+
+Pendência antes de haver utilizadores reais além do proprietário: SMTP (por exemplo Resend), reactivar "Confirm email" e actualizar o template conforme a secção de e-mail acima.
+
+## Próximo passo autorizado — Sprint 2: contas, transacções e categorias
+
+Seguir `DATABASE.md` e `DECISIONS.md` sem reinterpretar. Unidades previstas, cada uma com lint/build/commit:
+
+1. Migração financeira: enums, `accounts`, `categories`, `transactions`, RLS, integridade entre linhas (mesmo `user_id`, categoria compatível, conta não arquivada), índices e funções de transferência atómica.
+2. Funcionalidade de contas (listar, criar, editar, arquivar).
+3. Funcionalidade de categorias.
+4. Funcionalidade de transacções, incluindo transferências pela função PostgreSQL.
+5. Aplicar migrações a produção e validar critérios de saída do sprint.
 
 ## Procedimento para entregar ao Claude Code
 

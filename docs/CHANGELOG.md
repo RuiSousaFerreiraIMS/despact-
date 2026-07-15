@@ -27,3 +27,11 @@
 - Protecção de rotas no proxy: sem sessão, caminhos privados redireccionam para `/login`; com sessão, `/login` e `/signup` redireccionam para `/`.
 - Página inicial autenticada mínima com identificação do utilizador e terminar sessão; revalida a sessão no servidor.
 - Metadata da aplicação actualizada (título "Despact", `lang="pt"`).
+
+### Deploy — Sprint 1 concluído
+
+- Projecto Vercel ligado ao repositório GitHub; produção em `https://despact.vercel.app`, previews automáticos por branch.
+- Variáveis de ambiente separadas no painel Vercel: produção usa o projecto Supabase de produção; previews usam o de desenvolvimento.
+- Projecto Supabase de produção criado; migração `profiles` aplicada pela mesma ordem via CLI.
+- Confirmação de e-mail desactivada em ambos os ambientes até haver SMTP (pendência registada no handoff).
+- Critérios de saída do Sprint 1 verificados: sessão, protecção de rotas, builds e ausência de segredos no repositório.
