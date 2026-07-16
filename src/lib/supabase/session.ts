@@ -15,7 +15,13 @@ import { NextResponse, type NextRequest } from "next/server";
  */
 
 /** Caminhos acessíveis sem sessão iniciada. */
-const PUBLIC_PATHS = ["/login", "/signup", "/auth"];
+const PUBLIC_PATHS = [
+  "/login",
+  "/signup",
+  "/auth",
+  // Necessário para instalar a PWA sem sessão.
+  "/manifest.webmanifest",
+];
 
 function isPublicPath(pathname: string): boolean {
   return PUBLIC_PATHS.some(

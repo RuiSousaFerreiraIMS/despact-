@@ -178,6 +178,17 @@ Todo o âmbito bloqueado do MVP está entregue e em produção (`https://despact
 
 Consultar `PROJECT_CONTEXT.md` — funcionalidades como Open Banking, importações, orçamentos ou notificações pertencem a versões futuras e não devem ser iniciadas sem novo mandato.
 
+## Feedback de testadores (16 de Julho de 2026) e resposta
+
+Proprietário e amigos testaram, sobretudo em mobile. Tratado nesta iteração:
+
+- Menu de perfil (bola com inicial) no canto superior direito do mobile: nome/e-mail, acesso a Categorias e terminar sessão.
+- PWA: manifest, ícones e modo standalone — "Adicionar ao ecrã inicial" abre a app sem interface de browser.
+- Objectivos com data-alvo mostram quanto falta e o valor mensal necessário (`goalPace`, função pura testada).
+- Criar categoria directamente no formulário de movimento ("+ Nova categoria…"), com reutilização de categorias homónimas activas.
+
+**Candidato prioritário a V2 (não iniciado — exige decisão):** automatização do registo e classificação de despesas/receitas. Caminhos possíveis por ordem de esforço: regras de categorização por descrição → importação CSV → Open Banking. Pedido por dois testadores; é a maior alavanca de retenção identificada.
+
 ## Procedimento para entregar ao Claude Code
 
 1. Guarde todas as alterações desta pasta num repositório Git ou copie a pasta completa, incluindo `docs/`, `package.json`, `package-lock.json` e `CLAUDE.md`. Não é necessário copiar `node_modules/` nem `.next/`.

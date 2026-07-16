@@ -14,7 +14,12 @@ export interface TransactionInput {
   occurredOn: string;
   description: string | null;
   categoryId: string | null;
+  /** Nome de categoria a criar no acto do registo (opção "+ Nova categoria"). */
+  newCategoryName: string | null;
 }
+
+/** Valor sentinela do select quando o utilizador quer criar uma categoria. */
+export const NEW_CATEGORY_VALUE = "__new__";
 
 export interface TransferInput {
   fromAccountId: string;
@@ -60,7 +65,15 @@ export function parseTransactionForm(
     return { ok: false, error: "Indique a data do movimento." };
   }
 
-  if (categoryId !== "" && !UUID_PATTERN.test(categoryId)) {
+  const newCategoryName = String(
+    formData.get("new_category_name") ?? "",
+  ).trim();
+
+  if (categoryId === NEW_CATEGORY_VALUE) {
+    if (!newCategoryName) {
+      return { ok: false, error: "Indique o nome da nova categoria." };
+    }
+  } else if (categoryId !== "" && !UUID_PATTERN.test(categoryId)) {
     return { ok: false, error: "Categoria inválida." };
   }
 
@@ -72,7 +85,12 @@ export function parseTransactionForm(
       amountMinor: kind === "expense" ? -amountMinor : amountMinor,
       occurredOn,
       description: description === "" ? null : description,
-      categoryId: categoryId === "" ? null : categoryId,
+      categoryId:
+        categoryId === "" || categoryId === NEW_CATEGORY_VALUE
+          ? null
+          : categoryId,
+      newCategoryName:
+        categoryId === NEW_CATEGORY_VALUE ? newCategoryName : null,
     },
   };
 }

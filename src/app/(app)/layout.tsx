@@ -2,6 +2,7 @@ import { LogOut } from "lucide-react";
 import { redirect } from "next/navigation";
 
 import { BottomNav, SidebarNav } from "@/components/app-nav";
+import { UserMenu } from "@/components/user-menu";
 import { createClient } from "@/lib/supabase/server";
 
 import { logout } from "./actions";
@@ -27,6 +28,12 @@ export default async function AppLayout({
   if (!user) {
     redirect("/login");
   }
+
+  const { data: profile } = await supabase
+    .from("profiles")
+    .select("display_name")
+    .eq("id", user.id)
+    .maybeSingle();
 
   return (
     <div className="min-h-screen md:flex">
@@ -66,20 +73,15 @@ export default async function AppLayout({
 
       {/* Cabeçalho — mobile */}
       <header className="sticky top-0 z-40 border-b border-border bg-background/95 backdrop-blur md:hidden">
-        <div className="flex items-center justify-between px-4 py-3">
+        <div className="flex items-center justify-between px-4 py-2.5">
           <p className="font-display text-lg font-semibold tracking-tight">
             Despact
           </p>
-          <form action={logout}>
-            <button
-              type="submit"
-              aria-label="Terminar sessão"
-              className="flex items-center gap-1.5 py-1 text-sm text-muted-foreground"
-            >
-              <LogOut className="size-4" />
-              Sair
-            </button>
-          </form>
+          <UserMenu
+            email={user.email ?? ""}
+            displayName={profile?.display_name ?? null}
+            logout={logout}
+          />
         </div>
       </header>
 
