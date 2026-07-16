@@ -152,8 +152,8 @@ O polimento visual é o tema central deste sprint, respondendo ao feedback do pr
 1. ~~Base shadcn/ui e passagem de design~~ — identidade Despact (tinta/papel/verde-nota, Space Grotesk + Instrument Sans) aplicada a todas as páginas; sidebar desktop e barra inferior mobile com acção central; direcção aprovada pelo proprietário.
 2. ~~Insights (D-007)~~ — quatro regras puras e testadas no painel: taxa de poupança, despesas vs. mês anterior (período comparável), maior categoria, cobertura do património. Cada uma expõe a regra e o período.
 3. ~~Categorias sugeridas (D-008)~~ — semeadas no registo e a pedido; migração `20260715170000_default_categories.sql` aplicada ao dev.
-4. Revisão de estados vazios, erros e carregamentos; acessibilidade, desempenho e segurança. ← **próxima unidade**
-5. Aplicar migração a produção, validar critérios de saída e fechar o MVP (requer o utilizador: `supabase link` para produção e teste final).
+4. ~~Revisão final~~ — loading skeleton, error boundary recuperável e 404 na área autenticada; skip link e semântica ARIA; cabeçalhos de segurança no `next.config.ts`; sem segredos nem `service_role` no código.
+5. Aplicar migração a produção, validar critérios de saída e fechar o MVP. ← **última unidade; requer o utilizador** (`supabase link` para produção).
 
 Qualidade: existe agora `npm test` (vitest) com 18 testes unitários de dinheiro e regras de insights; correr junto com lint e build.
 

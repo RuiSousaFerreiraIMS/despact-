@@ -94,6 +94,14 @@
 - Testes unitários (vitest): 18 testes para conversão/formatação de dinheiro e regras de insights.
 - Verificação E2E no painel em execução: os quatro insights renderizam com cálculos correctos.
 
+### Sprint 4 — revisão final
+
+- Estados de carregamento (skeleton), erro recuperável ("Tentar novamente") e 404 com marca na área autenticada.
+- Acessibilidade: atalho "Saltar para o conteúdo", `aria-current` na navegação, `role=progressbar` nos objectivos, alertas com `role=alert`, foco visível nos tokens.
+- Segurança: cabeçalhos `X-Frame-Options: DENY`, `X-Content-Type-Options: nosniff`, `Referrer-Policy` e `Permissions-Policy`; reconfirmado que não há segredos versionados nem uso de `service_role`.
+- Desempenho: fontes self-hosted via `next/font`; apenas dois componentes cliente (formulário de movimento e navegação).
+- Verificado em execução: cabeçalhos, skip link e 404 autenticado.
+
 ### Sprint 2 concluído
 
 - Migrações financeiras aplicadas a produção pela mesma ordem que em desenvolvimento (3/3 sincronizadas).

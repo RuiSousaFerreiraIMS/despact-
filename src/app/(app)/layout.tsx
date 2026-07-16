@@ -30,6 +30,13 @@ export default async function AppLayout({
 
   return (
     <div className="min-h-screen md:flex">
+      <a
+        href="#conteudo"
+        className="sr-only rounded-lg bg-primary px-4 py-2 text-sm font-medium text-primary-foreground focus:not-sr-only focus:absolute focus:left-4 focus:top-4 focus:z-50"
+      >
+        Saltar para o conteúdo
+      </a>
+
       {/* Sidebar — desktop */}
       <aside className="fixed inset-y-0 left-0 z-40 hidden w-60 flex-col bg-sidebar text-sidebar-foreground md:flex">
         <div className="px-6 py-6">
@@ -78,7 +85,10 @@ export default async function AppLayout({
 
       {/* Conteúdo */}
       <div className="min-w-0 flex-1 md:pl-60">
-        <div className="mx-auto w-full max-w-5xl px-4 pb-24 pt-6 md:px-8 md:pb-10 md:pt-8">
+        <div
+          id="conteudo"
+          className="mx-auto w-full max-w-5xl px-4 pb-24 pt-6 md:px-8 md:pb-10 md:pt-8"
+        >
           {children}
         </div>
       </div>
