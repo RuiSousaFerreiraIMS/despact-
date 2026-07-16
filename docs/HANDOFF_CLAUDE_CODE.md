@@ -153,9 +153,30 @@ O polimento visual é o tema central deste sprint, respondendo ao feedback do pr
 2. ~~Insights (D-007)~~ — quatro regras puras e testadas no painel: taxa de poupança, despesas vs. mês anterior (período comparável), maior categoria, cobertura do património. Cada uma expõe a regra e o período.
 3. ~~Categorias sugeridas (D-008)~~ — semeadas no registo e a pedido; migração `20260715170000_default_categories.sql` aplicada ao dev.
 4. ~~Revisão final~~ — loading skeleton, error boundary recuperável e 404 na área autenticada; skip link e semântica ARIA; cabeçalhos de segurança no `next.config.ts`; sem segredos nem `service_role` no código.
-5. Aplicar migração a produção, validar critérios de saída e fechar o MVP. ← **última unidade; requer o utilizador** (`supabase link` para produção).
+5. ~~Produção~~ — migração das categorias sugeridas aplicada (5/5 sincronizadas); merge em `main`, deploy Vercel e verificação em produção (cabeçalhos, identidade, protecção de rotas).
 
 Qualidade: existe agora `npm test` (vitest) com 18 testes unitários de dinheiro e regras de insights; correr junto com lint e build.
+
+### Critérios de saída do Sprint 4 (ROADMAP.md)
+
+- Insights são determinísticos e explicáveis — quatro regras puras, cada uma com a regra e o período visíveis; sem tabela persistida, sem IA.
+- Fluxos principais revistos em mobile e desktop — identidade aplicada aos dois formatos, com navegação própria de cada um.
+- Estados vazios, erros e carregamentos tratados — skeletons, error boundary, 404, mensagens de formulário e estados vazios com acção.
+- Revisão final de acessibilidade, desempenho e segurança feita e registada no CHANGELOG.
+
+## MVP CONCLUÍDO — estado em 16 de Julho de 2026
+
+Todo o âmbito bloqueado do MVP está entregue e em produção (`https://despact.vercel.app`): autenticação, painel, contas, transacções (com transferências atómicas), categorias (com sugeridas), objectivos, património líquido, insights básicos e design responsivo com identidade própria.
+
+### Pendências operacionais conhecidas
+
+- SMTP + reactivar "Confirm email" (e template `token_hash`) antes de abrir a utilizadores reais além do proprietário.
+- A máquina local (`.env.local` e `supabase link`) deve apontar sempre ao projecto de desenvolvimento.
+- Utilizadores de teste `e2e-*@despact.test` na base de dados de desenvolvimento podem ser apagados no painel.
+
+### Próximos passos possíveis (fora do MVP; exigem decisão explícita)
+
+Consultar `PROJECT_CONTEXT.md` — funcionalidades como Open Banking, importações, orçamentos ou notificações pertencem a versões futuras e não devem ser iniciadas sem novo mandato.
 
 ## Procedimento para entregar ao Claude Code
 

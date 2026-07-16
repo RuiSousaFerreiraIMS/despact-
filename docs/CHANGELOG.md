@@ -102,6 +102,12 @@
 - Desempenho: fontes self-hosted via `next/font`; apenas dois componentes cliente (formulário de movimento e navegação).
 - Verificado em execução: cabeçalhos, skip link e 404 autenticado.
 
+### Sprint 4 concluído — MVP fechado
+
+- Migração das categorias sugeridas aplicada a produção (5/5 sincronizadas).
+- Merge em `main` e deploy verificados em produção: identidade, cabeçalhos de segurança e protecção de rotas.
+- Critérios de saída do Sprint 4 e âmbito completo do MVP validados; pendências operacionais registadas no handoff.
+
 ### Sprint 2 concluído
 
 - Migrações financeiras aplicadas a produção pela mesma ordem que em desenvolvimento (3/3 sincronizadas).
