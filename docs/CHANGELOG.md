@@ -102,6 +102,12 @@
 - Desempenho: fontes self-hosted via `next/font`; apenas dois componentes cliente (formulário de movimento e navegação).
 - Verificado em execução: cabeçalhos, skip link e 404 autenticado.
 
+### Pós-MVP — orientação para objectivos
+
+- Novo insight "Ritmo dos objectivos" (D-007): soma do valor mensal exigido pelos objectivos activos com data-alvo, comparada com a poupança líquida média dos meses anteriores; positivo quando cobre, aviso quando não chega, neutro sem histórico. Regra e período visíveis.
+- 4 testes unitários novos (27 no total). Verificado E2E no painel com cenário de poupança insuficiente.
+- Pedido do proprietário registado; planos avançados (alocação por objectivo, simulações) ficam para V2.
+
 ### Pós-MVP — feedback de testadores (1.ª iteração)
 
 - Menu de perfil no cabeçalho mobile (bola com inicial): nome/e-mail, atalho para Categorias e terminar sessão.

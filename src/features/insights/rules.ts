@@ -120,6 +120,62 @@ export function topCategoryInsight(input: {
   };
 }
 
+/** Ritmo exigido pelos objectivos comparado com a poupança média real. */
+export function goalsVsSavingsInsight(input: {
+  /** Soma (positiva) do valor mensal necessário dos objectivos com data-alvo. */
+  requiredPerMonthMinor: number;
+  goalsCount: number;
+  /** Poupança líquida média mensal dos meses completos analisados; `null` sem dados. */
+  averageMonthlySavingsMinor: number | null;
+  windowLabel: string;
+}): Insight | null {
+  if (input.requiredPerMonthMinor <= 0 || input.goalsCount === 0) {
+    return null;
+  }
+
+  const required = formatMinorUnits(input.requiredPerMonthMinor, "EUR");
+  const singular = input.goalsCount === 1;
+  const subjectRequires = singular
+    ? "O seu objectivo com data-alvo exige"
+    : `Os seus ${input.goalsCount} objectivos com data-alvo exigem`;
+  const forGoals = singular ? "o seu objectivo" : "os seus objectivos";
+
+  if (input.averageMonthlySavingsMinor === null) {
+    return {
+      id: "goals-vs-savings",
+      title: "Ritmo dos objectivos",
+      body: `${subjectRequires} cerca de ${required}/mês.`,
+      explanation:
+        "Regra: soma do valor mensal necessário de cada objectivo activo com data-alvo.",
+      tone: "neutral",
+    };
+  }
+
+  const savings = formatMinorUnits(
+    Math.max(0, input.averageMonthlySavingsMinor),
+    "EUR",
+  );
+  const explanation = `Regra: soma do ritmo mensal dos objectivos com data-alvo vs. poupança média mensal (${input.windowLabel}).`;
+
+  if (input.averageMonthlySavingsMinor >= input.requiredPerMonthMinor) {
+    return {
+      id: "goals-vs-savings",
+      title: "Ritmo dos objectivos",
+      body: `A sua poupança média (${savings}/mês) cobre o ritmo necessário para ${forGoals} (${required}/mês). Continue assim.`,
+      explanation,
+      tone: "positive",
+    };
+  }
+
+  return {
+    id: "goals-vs-savings",
+    title: "Ritmo dos objectivos",
+    body: `${subjectRequires} cerca de ${required}/mês, mas a sua poupança média é ${savings}/mês. Reforce a poupança ou ajuste as datas-alvo.`,
+    explanation,
+    tone: "warning",
+  };
+}
+
 /** Quantos meses de despesas médias o património actual cobre. */
 export function coverageInsight(input: {
   netWorthMinor: number;
