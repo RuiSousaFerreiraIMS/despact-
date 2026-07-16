@@ -189,6 +189,12 @@ Proprietário e amigos testaram, sobretudo em mobile. Tratado nesta iteração:
 
 **Candidato prioritário a V2 (não iniciado — exige decisão):** automatização do registo e classificação de despesas/receitas. Caminhos possíveis por ordem de esforço: regras de categorização por descrição → importação CSV → Open Banking. Pedido por dois testadores; é a maior alavanca de retenção identificada.
 
+## Orientação para objectivos (pedido do proprietário, 16 de Julho de 2026)
+
+O proprietário quer que a app o ajude a saber *como* atingir os objectivos. Primeiro passo entregue de forma determinística (D-007): cada objectivo com data-alvo mostra o valor mensal necessário (`goalPace`), e o painel compara a soma desses ritmos com a poupança média real (insight "Ritmo dos objectivos").
+
+**Fica para V2 (exige decisão):** alocação da poupança por objectivo com prioridades, simulações de cenários ("e se adiar 6 meses?"), contribuições registadas por objectivo. Qualquer um destes altera o modelo de dados (D-006) e merece ADR próprio.
+
 ## Procedimento para entregar ao Claude Code
 
 1. Guarde todas as alterações desta pasta num repositório Git ou copie a pasta completa, incluindo `docs/`, `package.json`, `package-lock.json` e `CLAUDE.md`. Não é necessário copiar `node_modules/` nem `.next/`.

@@ -1,8 +1,10 @@
+import { goalPace } from "@/features/goals/pace";
 import { createClient } from "@/lib/supabase/server";
 
 import {
   coverageInsight,
   expenseComparisonInsight,
+  goalsVsSavingsInsight,
   savingsRateInsight,
   topCategoryInsight,
 } from "./rules";
@@ -57,16 +59,21 @@ export async function getInsights(now = new Date()): Promise<Insight[]> {
   const windowYear = windowStartIndex < 0 ? year - 1 : year;
   const windowMonthIndex = ((windowStartIndex % 12) + 12) % 12;
 
-  const [transactionsResult, balancesResult] = await Promise.all([
+  const [transactionsResult, balancesResult, goalsResult] = await Promise.all([
     supabase
       .from("transactions")
       .select("kind, amount_minor, occurred_on, category:categories(name)")
       .gte("occurred_on", isoDate(windowYear, windowMonthIndex, 1))
       .in("kind", ["income", "expense"]),
     supabase.from("account_balances").select("balance_minor"),
+    supabase
+      .from("goals")
+      .select("target_amount_minor, current_amount_minor, target_date")
+      .eq("status", "active")
+      .not("target_date", "is", null),
   ]);
 
-  if (transactionsResult.error || balancesResult.error) {
+  if (transactionsResult.error || balancesResult.error || goalsResult.error) {
     throw new Error("Não foi possível calcular os insights.");
   }
 
@@ -106,17 +113,22 @@ export async function getInsights(now = new Date()): Promise<Insight[]> {
     );
   }
 
-  // Média mensal de despesas dos 3 meses completos anteriores (com dados).
+  // Agregados dos meses completos anteriores (com dados): despesas para a
+  // cobertura, poupança líquida (receitas + despesas) para os objectivos.
   const monthlyExpense = new Map<string, number>();
+  const monthlyNet = new Map<string, number>();
   for (const row of rows) {
-    if (row.kind !== "expense" || row.occurred_on >= monthStart) {
+    if (row.occurred_on >= monthStart) {
       continue;
     }
     const key = row.occurred_on.slice(0, 7);
-    monthlyExpense.set(
-      key,
-      (monthlyExpense.get(key) ?? 0) + Math.abs(row.amount_minor),
-    );
+    monthlyNet.set(key, (monthlyNet.get(key) ?? 0) + row.amount_minor);
+    if (row.kind === "expense") {
+      monthlyExpense.set(
+        key,
+        (monthlyExpense.get(key) ?? 0) + Math.abs(row.amount_minor),
+      );
+    }
   }
   const completeMonths = [...monthlyExpense.values()];
   const averageMonthlyExpenseMinor =
@@ -126,6 +138,29 @@ export async function getInsights(now = new Date()): Promise<Insight[]> {
             completeMonths.length,
         )
       : 0;
+  const netMonths = [...monthlyNet.values()];
+  const averageMonthlySavingsMinor =
+    netMonths.length > 0
+      ? Math.round(
+          netMonths.reduce((sum, value) => sum + value, 0) / netMonths.length,
+        )
+      : null;
+
+  // Ritmo mensal exigido pelos objectivos activos com data-alvo futura.
+  let requiredPerMonthMinor = 0;
+  let goalsWithPace = 0;
+  for (const goal of goalsResult.data) {
+    const pace = goalPace({
+      targetAmountMinor: goal.target_amount_minor,
+      currentAmountMinor: goal.current_amount_minor,
+      targetDate: goal.target_date,
+      today: now,
+    });
+    if (pace && !pace.overdue) {
+      requiredPerMonthMinor += pace.perMonthMinor;
+      goalsWithPace += 1;
+    }
+  }
 
   const netWorthMinor = balancesResult.data.reduce(
     (sum, row) => sum + (row.balance_minor ?? 0),
@@ -155,6 +190,12 @@ export async function getInsights(now = new Date()): Promise<Insight[]> {
       netWorthMinor,
       averageMonthlyExpenseMinor,
       windowLabel: `média dos ${completeMonths.length} meses anteriores com dados`,
+    }),
+    goalsVsSavingsInsight({
+      requiredPerMonthMinor,
+      goalsCount: goalsWithPace,
+      averageMonthlySavingsMinor,
+      windowLabel: `média dos ${netMonths.length} meses anteriores com dados`,
     }),
   ];
 

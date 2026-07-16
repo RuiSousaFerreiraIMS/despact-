@@ -3,6 +3,7 @@ import { describe, expect, it } from "vitest";
 import {
   coverageInsight,
   expenseComparisonInsight,
+  goalsVsSavingsInsight,
   savingsRateInsight,
   topCategoryInsight,
 } from "./rules";
@@ -105,6 +106,53 @@ describe("topCategoryInsight", () => {
     });
     expect(insight?.body).toContain("Supermercado");
     expect(insight?.body).toContain("75%");
+  });
+});
+
+describe("goalsVsSavingsInsight", () => {
+  it("é nulo sem objectivos com ritmo", () => {
+    expect(
+      goalsVsSavingsInsight({
+        requiredPerMonthMinor: 0,
+        goalsCount: 0,
+        averageMonthlySavingsMinor: 50000,
+        windowLabel: "3 meses",
+      }),
+    ).toBeNull();
+  });
+
+  it("mostra apenas o ritmo quando não há histórico de poupança", () => {
+    const insight = goalsVsSavingsInsight({
+      requiredPerMonthMinor: 30000,
+      goalsCount: 2,
+      averageMonthlySavingsMinor: null,
+      windowLabel: "0 meses",
+    });
+    expect(insight?.tone).toBe("neutral");
+    expect(insight?.body).toContain("2 objectivos");
+  });
+
+  it("é positivo quando a poupança cobre o ritmo", () => {
+    const insight = goalsVsSavingsInsight({
+      requiredPerMonthMinor: 30000,
+      goalsCount: 1,
+      averageMonthlySavingsMinor: 50000,
+      windowLabel: "3 meses",
+    });
+    expect(insight?.tone).toBe("positive");
+    expect(insight?.body).toContain("cobre");
+  });
+
+  it("avisa quando a poupança não chega, com concordância singular", () => {
+    const insight = goalsVsSavingsInsight({
+      requiredPerMonthMinor: 60000,
+      goalsCount: 1,
+      averageMonthlySavingsMinor: 20000,
+      windowLabel: "3 meses",
+    });
+    expect(insight?.tone).toBe("warning");
+    expect(insight?.body).toContain("O seu objectivo com data-alvo exige");
+    expect(insight?.body).toContain("Reforce a poupança ou ajuste");
   });
 });
 
