@@ -87,6 +87,13 @@
 - Identidade aplicada a todas as páginas: autenticação, contas, categorias, movimentos, transferências e objectivos — cartões, botões, inputs, selects nativos estilizados, badges e alertas de formulário consistentes.
 - Componentes partilhados novos: `NativeSelect` (selects de servidor com estilo do tema) e `FormAlert` (mensagens de erro/sucesso).
 
+### Sprint 4 — categorias sugeridas e insights
+
+- Categorias sugeridas (D-008): função `seed_default_categories` (8 despesa + 2 receita), chamada no registo pelo trigger e disponível na página de categorias para contas sem categorias; idempotente. Verificado por E2E.
+- Insights (D-007) no painel, como funções puras testáveis: taxa de poupança do mês, despesas vs. mês anterior em período comparável, maior categoria de despesa e cobertura do património em meses de despesas médias. Cada um mostra a regra e o período.
+- Testes unitários (vitest): 18 testes para conversão/formatação de dinheiro e regras de insights.
+- Verificação E2E no painel em execução: os quatro insights renderizam com cálculos correctos.
+
 ### Sprint 2 concluído
 
 - Migrações financeiras aplicadas a produção pela mesma ordem que em desenvolvimento (3/3 sincronizadas).

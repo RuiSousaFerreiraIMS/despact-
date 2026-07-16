@@ -26,6 +26,25 @@ async function requireUserId(): Promise<string> {
   return user.id;
 }
 
+/** Cria o conjunto de categorias sugeridas (D-008); idempotente. */
+export async function seedDefaultCategories() {
+  const userId = await requireUserId();
+
+  const supabase = await createClient();
+  const { error } = await supabase.rpc("seed_default_categories", {
+    p_user_id: userId,
+  });
+
+  if (error) {
+    redirect(
+      `/categories?error=${encodeURIComponent("Não foi possível criar as categorias sugeridas.")}`,
+    );
+  }
+
+  revalidatePath("/categories");
+  redirect("/categories");
+}
+
 export async function createCategory(formData: FormData) {
   const userId = await requireUserId();
   const parsed = parseCategoryForm(formData);

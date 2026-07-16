@@ -10,6 +10,7 @@ import { NativeSelect } from "@/components/ui/native-select";
 import {
   archiveCategory,
   createCategory,
+  seedDefaultCategories,
   unarchiveCategory,
 } from "@/features/categories/actions";
 import { listCategories } from "@/features/categories/queries";
@@ -155,10 +156,17 @@ export default async function CategoriesPage({
 
       {activeExpense.length === 0 && activeIncome.length === 0 ? (
         <Card>
-          <CardContent className="py-10 text-center text-sm text-muted-foreground">
-            Ainda não tem categorias. Crie algumas para classificar as suas
-            transacções — por exemplo &quot;Supermercado&quot; (despesa) ou
-            &quot;Salário&quot; (receita).
+          <CardContent className="space-y-4 py-10 text-center text-sm text-muted-foreground">
+            <p>
+              Ainda não tem categorias activas. Pode começar com um conjunto
+              sugerido — Supermercado, Casa, Transportes, Salário e outras —
+              e ajustá-lo à sua vida.
+            </p>
+            <form action={seedDefaultCategories}>
+              <Button type="submit" size="lg">
+                Adicionar categorias sugeridas
+              </Button>
+            </form>
           </CardContent>
         </Card>
       ) : null}

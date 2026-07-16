@@ -1,9 +1,10 @@
-import { ArrowDownRight, ArrowUpRight, PiggyBank } from "lucide-react";
+import { ArrowDownRight, ArrowUpRight, Lightbulb, PiggyBank } from "lucide-react";
 import Link from "next/link";
 import { redirect } from "next/navigation";
 
 import { Card, CardContent } from "@/components/ui/card";
 import { getDashboardData } from "@/features/dashboard/queries";
+import { getInsights } from "@/features/insights/queries";
 import { createClient } from "@/lib/supabase/server";
 import { formatMinorUnits } from "@/lib/money/format";
 import { cn } from "@/lib/utils";
@@ -49,8 +50,8 @@ export default async function DashboardPage() {
     redirect("/login");
   }
 
-  const { netWorthMinor, activeAccounts, monthSummary, activeGoals } =
-    await getDashboardData();
+  const [{ netWorthMinor, activeAccounts, monthSummary, activeGoals }, insights] =
+    await Promise.all([getDashboardData(), getInsights()]);
 
   const hasAccounts = activeAccounts.length > 0;
 
@@ -151,6 +152,41 @@ export default async function DashboardPage() {
           </Card>
         </section>
       )}
+
+      {insights.length > 0 ? (
+        <section className="space-y-3" aria-label="Insights">
+          <h2 className="font-display text-lg font-semibold tracking-tight">
+            Insights
+          </h2>
+          <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
+            {insights.map((insight) => (
+              <Card key={insight.id} size="sm">
+                <CardContent className="flex gap-3">
+                  <span
+                    className={cn(
+                      "mt-0.5 flex size-8 shrink-0 items-center justify-center rounded-full",
+                      insight.tone === "positive" &&
+                        "bg-accent text-accent-foreground",
+                      insight.tone === "warning" &&
+                        "bg-destructive/10 text-destructive",
+                      insight.tone === "neutral" &&
+                        "bg-secondary text-secondary-foreground",
+                    )}
+                  >
+                    <Lightbulb className="size-4" />
+                  </span>
+                  <div className="space-y-1">
+                    <p className="text-sm font-medium">{insight.body}</p>
+                    <p className="text-xs text-muted-foreground">
+                      {insight.explanation}
+                    </p>
+                  </div>
+                </CardContent>
+              </Card>
+            ))}
+          </div>
+        </section>
+      ) : null}
 
       <div className="grid grid-cols-1 gap-6 lg:grid-cols-2">
         {hasAccounts ? (

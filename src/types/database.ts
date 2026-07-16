@@ -240,6 +240,10 @@ export type Database = {
         Returns: string
       }
       delete_transfer: { Args: { p_transfer_id: string }; Returns: undefined }
+      seed_default_categories: {
+        Args: { p_user_id: string }
+        Returns: undefined
+      }
     }
     Enums: {
       account_type: "cash" | "current" | "savings" | "credit_card" | "loan"
