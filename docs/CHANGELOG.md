@@ -102,6 +102,15 @@
 - Desempenho: fontes self-hosted via `next/font`; apenas dois componentes cliente (formulário de movimento e navegação).
 - Verificado em execução: cabeçalhos, skip link e 404 autenticado.
 
+### Pós-MVP — feedback de testadores (1.ª iteração)
+
+- Menu de perfil no cabeçalho mobile (bola com inicial): nome/e-mail, atalho para Categorias e terminar sessão.
+- PWA: manifest público, ícones (normal, maskable e Apple) e modo standalone; marca geométrica de barras ascendentes gerada por script (`scripts/generate-icons.mjs`).
+- Objectivos com data-alvo mostram o que falta e o valor mensal necessário (`goalPace`, pura, 5 testes).
+- "+ Nova categoria…" no formulário de movimento: cria a categoria no acto do registo; reutiliza categoria activa homónima em vez de falhar.
+- Correcção: o manifest era redireccionado para /login pelo proxy; passou a caminho público.
+- Feedback sobre automatização de registo/classificação registado no handoff como candidato prioritário a V2 (não iniciado; exige decisão).
+
 ### Sprint 4 concluído — MVP fechado
 
 - Migração das categorias sugeridas aplicada a produção (5/5 sincronizadas).

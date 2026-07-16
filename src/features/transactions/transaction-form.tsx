@@ -9,6 +9,7 @@ import { Label } from "@/components/ui/label";
 import { NativeSelect } from "@/components/ui/native-select";
 import { cn } from "@/lib/utils";
 
+import { NEW_CATEGORY_VALUE } from "./validation";
 import type { EntryKind } from "./validation";
 
 interface AccountOption {
@@ -59,9 +60,18 @@ export function TransactionForm({
   submitLabel: string;
 }) {
   const [kind, setKind] = useState<EntryKind>(initial?.kind ?? "expense");
+  const [categoryChoice, setCategoryChoice] = useState(
+    initial?.categoryId ?? "",
+  );
   const compatibleCategories = categories.filter(
     (category) => category.type === kind,
   );
+
+  function changeKind(next: EntryKind) {
+    setKind(next);
+    // Categorias são específicas do tipo; a escolha anterior deixa de valer.
+    setCategoryChoice("");
+  }
 
   const kindOptions: { value: EntryKind; label: string }[] = [
     { value: "expense", label: "Despesa" },
@@ -88,7 +98,7 @@ export function TransactionForm({
                 name="kind"
                 value={option.value}
                 checked={kind === option.value}
-                onChange={() => setKind(option.value)}
+                onChange={() => changeKind(option.value)}
                 className="sr-only"
               />
               {option.label}
@@ -151,10 +161,8 @@ export function TransactionForm({
         <NativeSelect
           id="category_id"
           name="category_id"
-          key={kind}
-          defaultValue={
-            initial && initial.kind === kind ? initial.categoryId : ""
-          }
+          value={categoryChoice}
+          onChange={(event) => setCategoryChoice(event.target.value)}
           className="h-10"
         >
           <option value="">Sem categoria</option>
@@ -163,7 +171,21 @@ export function TransactionForm({
               {category.name}
             </option>
           ))}
+          <option value={NEW_CATEGORY_VALUE}>+ Nova categoria…</option>
         </NativeSelect>
+        {categoryChoice === NEW_CATEGORY_VALUE ? (
+          <Input
+            name="new_category_name"
+            type="text"
+            required
+            autoFocus
+            placeholder={
+              kind === "expense" ? "Ex.: Ginásio" : "Ex.: Freelance"
+            }
+            aria-label="Nome da nova categoria"
+            className="h-10"
+          />
+        ) : null}
       </div>
 
       <div className="space-y-1.5">

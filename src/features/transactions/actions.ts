@@ -44,6 +44,56 @@ function revalidateFinancialViews() {
   revalidatePath("/accounts");
 }
 
+/**
+ * Resolve a categoria do movimento, criando-a quando o utilizador escolheu
+ * "+ Nova categoria". Se já existir uma activa com o mesmo nome e tipo,
+ * reutiliza-a em vez de falhar.
+ */
+async function resolveCategoryId(
+  supabase: Awaited<ReturnType<typeof createClient>>,
+  userId: string,
+  input: {
+    kind: "income" | "expense";
+    categoryId: string | null;
+    newCategoryName: string | null;
+  },
+): Promise<{ ok: true; categoryId: string | null } | { ok: false }> {
+  if (!input.newCategoryName) {
+    return { ok: true, categoryId: input.categoryId };
+  }
+
+  const { data: created, error } = await supabase
+    .from("categories")
+    .insert({
+      user_id: userId,
+      name: input.newCategoryName,
+      type: input.kind,
+    })
+    .select("id")
+    .single();
+
+  if (!error) {
+    revalidatePath("/categories");
+    return { ok: true, categoryId: created.id };
+  }
+
+  if (error.code === "23505") {
+    const { data: existing } = await supabase
+      .from("categories")
+      .select("id")
+      .eq("type", input.kind)
+      .ilike("name", input.newCategoryName)
+      .is("archived_at", null)
+      .maybeSingle();
+
+    if (existing) {
+      return { ok: true, categoryId: existing.id };
+    }
+  }
+
+  return { ok: false };
+}
+
 export async function createTransaction(formData: FormData) {
   const userId = await requireUserId();
   const parsed = parseTransactionForm(formData);
@@ -67,6 +117,14 @@ export async function createTransaction(formData: FormData) {
     );
   }
 
+  const category = await resolveCategoryId(supabase, userId, parsed.value);
+
+  if (!category.ok) {
+    redirect(
+      `/transactions/new?error=${encodeURIComponent("Não foi possível criar a nova categoria.")}`,
+    );
+  }
+
   const { error } = await supabase.from("transactions").insert({
     user_id: userId,
     account_id: parsed.value.accountId,
@@ -75,7 +133,7 @@ export async function createTransaction(formData: FormData) {
     currency_code: account.currency_code,
     occurred_on: parsed.value.occurredOn,
     description: parsed.value.description,
-    category_id: parsed.value.categoryId,
+    category_id: category.categoryId,
   });
 
   if (error) {
@@ -89,7 +147,7 @@ export async function createTransaction(formData: FormData) {
 }
 
 export async function updateTransaction(id: string, formData: FormData) {
-  await requireUserId();
+  const userId = await requireUserId();
   const parsed = parseTransactionForm(formData);
 
   if (!parsed.ok) {
@@ -112,6 +170,14 @@ export async function updateTransaction(id: string, formData: FormData) {
     );
   }
 
+  const category = await resolveCategoryId(supabase, userId, parsed.value);
+
+  if (!category.ok) {
+    redirect(
+      `/transactions/${id}/edit?error=${encodeURIComponent("Não foi possível criar a nova categoria.")}`,
+    );
+  }
+
   const { error } = await supabase
     .from("transactions")
     .update({
@@ -121,7 +187,7 @@ export async function updateTransaction(id: string, formData: FormData) {
       currency_code: account.currency_code,
       occurred_on: parsed.value.occurredOn,
       description: parsed.value.description,
-      category_id: parsed.value.categoryId,
+      category_id: category.categoryId,
     })
     .eq("id", id)
     // Transferências editam-se como operação atómica própria, nunca por aqui.

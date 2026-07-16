@@ -13,6 +13,7 @@ import {
   reactivateGoal,
   updateGoalProgress,
 } from "@/features/goals/actions";
+import { goalPace } from "@/features/goals/pace";
 import { listGoals } from "@/features/goals/queries";
 import type { Goal } from "@/features/goals/queries";
 import { formatMinorUnits, minorUnitsToInputValue } from "@/lib/money/format";
@@ -38,6 +39,14 @@ function GoalCard({ goal }: { goal: Goal }) {
   const reached = goal.current_amount_minor >= goal.target_amount_minor;
   const isActive = goal.status === "active";
   const isArchived = goal.status === "archived";
+  const pace = isActive
+    ? goalPace({
+        targetAmountMinor: goal.target_amount_minor,
+        currentAmountMinor: goal.current_amount_minor,
+        targetDate: goal.target_date,
+        today: new Date(),
+      })
+    : null;
 
   return (
     <Card className={cn(isArchived && "bg-muted/40")}>
@@ -67,6 +76,18 @@ function GoalCard({ goal }: { goal: Goal }) {
               {formatMinorUnits(goal.target_amount_minor, goal.currency_code)}
               {goal.target_date ? ` · até ${formatDate(goal.target_date)}` : ""}
             </p>
+            {pace ? (
+              <p
+                className={cn(
+                  "mt-1 text-sm",
+                  pace.overdue ? "text-destructive" : "text-success",
+                )}
+              >
+                {pace.overdue
+                  ? `A data-alvo passou; faltam ${formatMinorUnits(pace.remainingMinor, goal.currency_code)}.`
+                  : `Faltam ${formatMinorUnits(pace.remainingMinor, goal.currency_code)} — cerca de ${formatMinorUnits(pace.perMonthMinor, goal.currency_code)}/mês até à data-alvo.`}
+              </p>
+            ) : null}
           </div>
           <span className="font-display text-xl font-semibold tabular-nums">
             {percent}%

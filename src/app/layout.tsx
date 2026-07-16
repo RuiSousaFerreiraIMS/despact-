@@ -1,4 +1,4 @@
-import type { Metadata } from "next";
+import type { Metadata, Viewport } from "next";
 import "./globals.css";
 import { Instrument_Sans, Space_Grotesk } from "next/font/google";
 
@@ -21,6 +21,19 @@ const display = Space_Grotesk({
 export const metadata: Metadata = {
   title: "Despact",
   description: "Plataforma pessoal de finanças orientada a decisões.",
+  icons: {
+    icon: "/icon-192.png",
+    apple: "/apple-icon.png",
+  },
+  appleWebApp: {
+    capable: true,
+    statusBarStyle: "default",
+    title: "Despact",
+  },
+};
+
+export const viewport: Viewport = {
+  themeColor: "#1E2230",
 };
 
 export default function RootLayout({
