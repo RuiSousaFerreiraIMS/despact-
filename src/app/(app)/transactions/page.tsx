@@ -1,5 +1,15 @@
+import {
+  ArrowDownLeft,
+  ArrowLeftRight,
+  ArrowUpRight,
+  Plus,
+} from "lucide-react";
 import Link from "next/link";
 
+import { FormAlert } from "@/components/form-alert";
+import { Badge } from "@/components/ui/badge";
+import { Button } from "@/components/ui/button";
+import { Card, CardContent } from "@/components/ui/card";
 import {
   deleteTransaction,
   deleteTransfer,
@@ -7,85 +17,94 @@ import {
 import { listRecentTransactions } from "@/features/transactions/queries";
 import type { TransactionListItem } from "@/features/transactions/queries";
 import { formatMinorUnits } from "@/lib/money/format";
+import { cn } from "@/lib/utils";
 
 function formatDate(isoDate: string): string {
   const [year, month, day] = isoDate.split("-");
   return `${day}/${month}/${year}`;
 }
 
-function TransactionRow({ transaction }: { transaction: TransactionListItem }) {
+const KIND_ICON = {
+  income: ArrowUpRight,
+  expense: ArrowDownLeft,
+  transfer: ArrowLeftRight,
+} as const;
+
+function TransactionRow({
+  transaction,
+}: {
+  transaction: TransactionListItem;
+}) {
   const isTransfer = transaction.kind === "transfer";
-  const amountClass =
-    transaction.kind === "income"
-      ? "text-green-700"
-      : isTransfer
-        ? "text-gray-500"
-        : "text-gray-900";
+  const Icon = KIND_ICON[transaction.kind];
 
   return (
-    <li className="flex flex-wrap items-center justify-between gap-2 p-3">
-      <div className="min-w-0">
+    <li className="flex flex-wrap items-center gap-3 px-5 py-3.5">
+      <span
+        className={cn(
+          "flex size-9 shrink-0 items-center justify-center rounded-full",
+          transaction.kind === "income" && "bg-accent text-accent-foreground",
+          transaction.kind === "expense" &&
+            "bg-secondary text-secondary-foreground",
+          isTransfer && "bg-muted text-muted-foreground",
+        )}
+      >
+        <Icon className="size-4" />
+      </span>
+
+      <div className="min-w-0 flex-1">
         <p className="truncate font-medium">
           {transaction.description ??
             transaction.category?.name ??
             (isTransfer ? "Transferência" : "Sem descrição")}
         </p>
-        <p className="text-sm text-gray-500">
+        <p className="flex flex-wrap items-center gap-x-2 text-sm text-muted-foreground">
           {formatDate(transaction.occurred_on)} · {transaction.account?.name}
           {isTransfer ? (
-            <span className="ml-2 rounded bg-gray-100 px-1.5 py-0.5 text-xs">
-              Transferência
-            </span>
+            <Badge variant="secondary">Transferência</Badge>
           ) : transaction.category?.name && transaction.description ? (
-            <span className="ml-2 text-xs">{transaction.category.name}</span>
+            <span className="text-xs">{transaction.category.name}</span>
           ) : null}
         </p>
       </div>
-      <div className="flex items-center gap-4">
-        <span className={`font-semibold tabular-nums ${amountClass}`}>
-          {formatMinorUnits(transaction.amount_minor, transaction.currency_code)}
-        </span>
-        <span className="flex gap-3 text-sm">
-          {isTransfer ? (
-            transaction.amount_minor < 0 && transaction.transfer_id ? (
-              <form action={deleteTransfer.bind(null, transaction.transfer_id)}>
-                <button
-                  type="submit"
-                  className="py-1 text-gray-500 underline hover:text-gray-900"
-                >
-                  Eliminar
-                </button>
-              </form>
-            ) : null
-          ) : (
-            <>
-              <Link
-                href={`/transactions/${transaction.id}/edit`}
-                className="py-1 underline"
-              >
-                Editar
-              </Link>
-              <form action={deleteTransaction.bind(null, transaction.id)}>
-                <button
-                  type="submit"
-                  className="py-1 text-gray-500 underline hover:text-gray-900"
-                >
-                  Eliminar
-                </button>
-              </form>
-            </>
-          )}
-        </span>
-      </div>
+
+      <span
+        className={cn(
+          "font-display font-semibold tabular-nums",
+          transaction.kind === "income" && "text-success",
+          isTransfer && "text-muted-foreground",
+        )}
+      >
+        {formatMinorUnits(transaction.amount_minor, transaction.currency_code)}
+      </span>
+
+      <span className="flex gap-1">
+        {isTransfer ? (
+          transaction.amount_minor < 0 && transaction.transfer_id ? (
+            <form action={deleteTransfer.bind(null, transaction.transfer_id)}>
+              <Button type="submit" variant="ghost" size="sm">
+                Eliminar
+              </Button>
+            </form>
+          ) : null
+        ) : (
+          <>
+            <Button asChild variant="ghost" size="sm">
+              <Link href={`/transactions/${transaction.id}/edit`}>Editar</Link>
+            </Button>
+            <form action={deleteTransaction.bind(null, transaction.id)}>
+              <Button type="submit" variant="ghost" size="sm">
+                Eliminar
+              </Button>
+            </form>
+          </>
+        )}
+      </span>
     </li>
   );
 }
 
-/**
- * Histórico de movimentos. Transferências aparecem como os seus dois lados,
- * identificados; eliminar um lado elimina o par (operação atómica na base de
- * dados). Eliminar aparece apenas no lado negativo para não duplicar a acção.
- */
+/** Histórico de movimentos; transferências identificadas e eliminadas em par. */
 export default async function TransactionsPage({
   searchParams,
 }: {
@@ -98,41 +117,46 @@ export default async function TransactionsPage({
 
   return (
     <main className="space-y-6">
-      <div className="flex flex-wrap items-center justify-between gap-2">
-        <h1 className="text-xl font-semibold">Transacções</h1>
+      <div className="flex flex-wrap items-center justify-between gap-3">
+        <h1 className="font-display text-2xl font-semibold tracking-tight">
+          Movimentos
+        </h1>
         <div className="flex gap-2">
-          <Link
-            href="/transactions/transfer"
-            className="rounded-md border border-gray-300 px-4 py-2 text-sm hover:bg-gray-50"
-          >
-            Transferência
-          </Link>
-          <Link
-            href="/transactions/new"
-            className="rounded-md bg-gray-900 px-4 py-2 text-sm font-medium text-white hover:bg-gray-700"
-          >
-            Nova transacção
-          </Link>
+          <Button asChild variant="outline">
+            <Link href="/transactions/transfer">
+              <ArrowLeftRight data-icon="inline-start" />
+              Transferência
+            </Link>
+          </Button>
+          <Button asChild>
+            <Link href="/transactions/new">
+              <Plus data-icon="inline-start" />
+              Novo movimento
+            </Link>
+          </Button>
         </div>
       </div>
 
-      {error ? (
-        <p className="rounded-md border border-red-300 bg-red-50 p-3 text-sm text-red-800">
-          {error}
-        </p>
-      ) : null}
+      {error ? <FormAlert variant="error">{error}</FormAlert> : null}
 
       {transactions.length === 0 ? (
-        <p className="rounded-md border border-gray-200 p-6 text-center text-sm text-gray-500">
-          Ainda não tem movimentos. Registe a primeira despesa ou receita —
-          demora menos de 15 segundos.
-        </p>
+        <Card>
+          <CardContent className="py-10 text-center text-sm text-muted-foreground">
+            Ainda não tem movimentos. Registe a primeira despesa ou receita —
+            demora menos de 15 segundos.
+          </CardContent>
+        </Card>
       ) : (
-        <ul className="divide-y divide-gray-200 rounded-md border border-gray-200">
-          {transactions.map((transaction) => (
-            <TransactionRow key={transaction.id} transaction={transaction} />
-          ))}
-        </ul>
+        <Card className="py-0">
+          <ul className="divide-y divide-border">
+            {transactions.map((transaction) => (
+              <TransactionRow
+                key={transaction.id}
+                transaction={transaction}
+              />
+            ))}
+          </ul>
+        </Card>
       )}
     </main>
   );

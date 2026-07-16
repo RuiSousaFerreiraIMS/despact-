@@ -1,5 +1,7 @@
 import { notFound, redirect } from "next/navigation";
 
+import { FormAlert } from "@/components/form-alert";
+import { Card, CardContent } from "@/components/ui/card";
 import { listAccountsWithBalance } from "@/features/accounts/queries";
 import { listActiveCategories } from "@/features/categories/queries";
 import { updateTransaction } from "@/features/transactions/actions";
@@ -46,34 +48,36 @@ export default async function EditTransactionPage({
 
   return (
     <main className="mx-auto max-w-md space-y-6">
-      <h1 className="text-xl font-semibold">Editar transacção</h1>
+      <h1 className="font-display text-2xl font-semibold tracking-tight">
+        Editar movimento
+      </h1>
 
-      {error ? (
-        <p className="rounded-md border border-red-300 bg-red-50 p-3 text-sm text-red-800">
-          {error}
-        </p>
-      ) : null}
+      {error ? <FormAlert variant="error">{error}</FormAlert> : null}
 
-      <TransactionForm
-        accounts={activeAccounts}
-        categories={categories.map((category) => ({
-          id: category.id,
-          name: category.name,
-          type: category.type,
-        }))}
-        action={updateTransaction.bind(null, id)}
-        initial={{
-          kind: transaction.kind === "income" ? "income" : "expense",
-          accountId: transaction.account_id,
-          amount: minorUnitsToInputValue(
-            Math.abs(transaction.amount_minor),
-          ),
-          occurredOn: transaction.occurred_on,
-          description: transaction.description ?? "",
-          categoryId: transaction.category_id ?? "",
-        }}
-        submitLabel="Guardar"
-      />
+      <Card>
+        <CardContent>
+          <TransactionForm
+            accounts={activeAccounts}
+            categories={categories.map((category) => ({
+              id: category.id,
+              name: category.name,
+              type: category.type,
+            }))}
+            action={updateTransaction.bind(null, id)}
+            initial={{
+              kind: transaction.kind === "income" ? "income" : "expense",
+              accountId: transaction.account_id,
+              amount: minorUnitsToInputValue(
+                Math.abs(transaction.amount_minor),
+              ),
+              occurredOn: transaction.occurred_on,
+              description: transaction.description ?? "",
+              categoryId: transaction.category_id ?? "",
+            }}
+            submitLabel="Guardar"
+          />
+        </CardContent>
+      </Card>
     </main>
   );
 }

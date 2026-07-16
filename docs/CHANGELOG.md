@@ -77,6 +77,31 @@
 - Teste E2E de `goals` na base de dados de desenvolvimento: 8/8 verificações.
 - Migração `goals` aplicada a produção (4/4 sincronizadas); merge e deploy verificados. Sprint 3 concluído.
 
+### Sprint 4 — identidade visual (primeira passagem)
+
+- Base shadcn/ui instalada (preset radix/nova) com tokens próprios do Despact: tinta azul-negra, papel quente, verde-nota como cor de assinatura, token `success` para valores positivos.
+- Tipografia: Space Grotesk (display, números tabulares) e Instrument Sans (corpo), via `next/font`.
+- Shell de navegação novo: sidebar escura fixa no desktop; no mobile, cabeçalho compacto e barra de separadores inferior com acção central destacada para novo movimento.
+- Painel redesenhado: património líquido como elemento principal, cartões de resumo do mês com ícones, listas de contas e objectivos em cartões.
+- Verificação visual por inspecção em viewport desktop e mobile; cálculos do painel confirmados com dados de demonstração.
+- Identidade aplicada a todas as páginas: autenticação, contas, categorias, movimentos, transferências e objectivos — cartões, botões, inputs, selects nativos estilizados, badges e alertas de formulário consistentes.
+- Componentes partilhados novos: `NativeSelect` (selects de servidor com estilo do tema) e `FormAlert` (mensagens de erro/sucesso).
+
+### Sprint 4 — categorias sugeridas e insights
+
+- Categorias sugeridas (D-008): função `seed_default_categories` (8 despesa + 2 receita), chamada no registo pelo trigger e disponível na página de categorias para contas sem categorias; idempotente. Verificado por E2E.
+- Insights (D-007) no painel, como funções puras testáveis: taxa de poupança do mês, despesas vs. mês anterior em período comparável, maior categoria de despesa e cobertura do património em meses de despesas médias. Cada um mostra a regra e o período.
+- Testes unitários (vitest): 18 testes para conversão/formatação de dinheiro e regras de insights.
+- Verificação E2E no painel em execução: os quatro insights renderizam com cálculos correctos.
+
+### Sprint 4 — revisão final
+
+- Estados de carregamento (skeleton), erro recuperável ("Tentar novamente") e 404 com marca na área autenticada.
+- Acessibilidade: atalho "Saltar para o conteúdo", `aria-current` na navegação, `role=progressbar` nos objectivos, alertas com `role=alert`, foco visível nos tokens.
+- Segurança: cabeçalhos `X-Frame-Options: DENY`, `X-Content-Type-Options: nosniff`, `Referrer-Policy` e `Permissions-Policy`; reconfirmado que não há segredos versionados nem uso de `service_role`.
+- Desempenho: fontes self-hosted via `next/font`; apenas dois componentes cliente (formulário de movimento e navegação).
+- Verificado em execução: cabeçalhos, skip link e 404 autenticado.
+
 ### Sprint 2 concluído
 
 - Migrações financeiras aplicadas a produção pela mesma ordem que em desenvolvimento (3/3 sincronizadas).

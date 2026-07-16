@@ -58,6 +58,14 @@ Este documento regista decisões tomadas no Sprint 0. O contexto do projecto con
 
 **Consequência no MVP:** não há previsões, aconselhamento de investimento ou classificação por IA.
 
+## D-008 — Categorias sugeridas
+
+**Decisão:** cada utilizador novo recebe, no registo, um conjunto inicial de categorias comuns (8 de despesa, 2 de receita), criado pela função `seed_default_categories`. Utilizadores existentes podem pedir o mesmo conjunto na página de categorias. As categorias criadas são pessoais e idênticas a quaisquer outras: renomeáveis e arquiváveis.
+
+**Justificação:** começar com uma lista vazia obriga a trabalho de configuração antes do primeiro registo de movimento. Um conjunto sugerido reduz o tempo até valor sem introduzir categorias globais nem hierarquias, preservando D-005.
+
+**Consequência no MVP:** a lista vive numa única função PostgreSQL (sem duplicação entre registo e interface) e é idempotente — não duplica categorias activas com o mesmo nome e tipo.
+
 ## Questões adiadas de propósito
 
 - Estratégia de conversão cambial e património em várias moedas.

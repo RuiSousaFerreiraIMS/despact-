@@ -1,5 +1,10 @@
 import Link from "next/link";
 
+import { FormAlert } from "@/components/form-alert";
+import { Button } from "@/components/ui/button";
+import { Card, CardContent } from "@/components/ui/card";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
 import { createGoal } from "@/features/goals/actions";
 
 /** Criação de objectivo (D-006): alvo positivo, data opcional, progresso manual. */
@@ -12,87 +17,75 @@ export default async function NewGoalPage({
 
   return (
     <main className="mx-auto max-w-md space-y-6">
-      <h1 className="text-xl font-semibold">Novo objectivo</h1>
+      <h1 className="font-display text-2xl font-semibold tracking-tight">
+        Novo objectivo
+      </h1>
 
-      {error ? (
-        <p className="rounded-md border border-red-300 bg-red-50 p-3 text-sm text-red-800">
-          {error}
-        </p>
-      ) : null}
+      {error ? <FormAlert variant="error">{error}</FormAlert> : null}
 
-      <form action={createGoal} className="space-y-4">
-        <div className="space-y-1">
-          <label htmlFor="name" className="block text-sm font-medium">
-            Nome
-          </label>
-          <input
-            id="name"
-            name="name"
-            type="text"
-            required
-            placeholder="Ex.: Fundo de emergência"
-            className="w-full rounded-md border border-gray-300 px-3 py-2 text-sm"
-          />
-        </div>
+      <Card>
+        <CardContent>
+          <form action={createGoal} className="space-y-4">
+            <div className="space-y-1.5">
+              <Label htmlFor="name">Nome</Label>
+              <Input
+                id="name"
+                name="name"
+                type="text"
+                required
+                placeholder="Ex.: Fundo de emergência"
+                className="h-10"
+              />
+            </div>
 
-        <div className="space-y-1">
-          <label htmlFor="target_amount" className="block text-sm font-medium">
-            Montante-alvo
-          </label>
-          <input
-            id="target_amount"
-            name="target_amount"
-            type="text"
-            inputMode="decimal"
-            required
-            placeholder="5000,00"
-            className="w-full rounded-md border border-gray-300 px-3 py-2 text-sm"
-          />
-        </div>
+            <div className="space-y-1.5">
+              <Label htmlFor="target_amount">Montante-alvo</Label>
+              <Input
+                id="target_amount"
+                name="target_amount"
+                type="text"
+                inputMode="decimal"
+                required
+                placeholder="5000,00"
+                className="h-10 font-display text-lg tabular-nums"
+              />
+            </div>
 
-        <div className="space-y-1">
-          <label htmlFor="currency_code" className="block text-sm font-medium">
-            Moeda
-          </label>
-          <input
-            id="currency_code"
-            name="currency_code"
-            type="text"
-            required
-            defaultValue="EUR"
-            maxLength={3}
-            pattern="[A-Za-z]{3}"
-            className="w-full rounded-md border border-gray-300 px-3 py-2 text-sm uppercase"
-          />
-        </div>
+            <div className="space-y-1.5">
+              <Label htmlFor="currency_code">Moeda</Label>
+              <Input
+                id="currency_code"
+                name="currency_code"
+                type="text"
+                required
+                defaultValue="EUR"
+                maxLength={3}
+                pattern="[A-Za-z]{3}"
+                className="h-10 uppercase"
+              />
+            </div>
 
-        <div className="space-y-1">
-          <label htmlFor="target_date" className="block text-sm font-medium">
-            Data-alvo (opcional)
-          </label>
-          <input
-            id="target_date"
-            name="target_date"
-            type="date"
-            className="w-full rounded-md border border-gray-300 px-3 py-2 text-sm"
-          />
-        </div>
+            <div className="space-y-1.5">
+              <Label htmlFor="target_date">Data-alvo (opcional)</Label>
+              <Input
+                id="target_date"
+                name="target_date"
+                type="date"
+                className="h-10"
+              />
+            </div>
 
-        <div className="flex flex-wrap gap-3">
-          <button
-            type="submit"
-            className="rounded-md bg-gray-900 px-4 py-2 text-sm font-medium text-white hover:bg-gray-700"
-          >
-            Criar objectivo
-          </button>
-          <Link
-            href="/goals"
-            className="rounded-md border border-gray-300 px-4 py-2 text-sm hover:bg-gray-50"
-          >
-            Cancelar
-          </Link>
-        </div>
-      </form>
+            <div className="flex flex-wrap gap-2 pt-1">
+              <Button type="submit" size="lg">
+                Criar objectivo
+              </Button>
+              <Button asChild variant="outline" size="lg">
+                <Link href="/goals">Cancelar</Link>
+              </Button>
+            </div>
+          </form>
+        </CardContent>
+      </Card>
     </main>
   );
 }

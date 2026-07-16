@@ -1,5 +1,7 @@
 import Link from "next/link";
 
+import { FormAlert } from "@/components/form-alert";
+import { Card, CardContent } from "@/components/ui/card";
 import { listAccountsWithBalance } from "@/features/accounts/queries";
 import { listActiveCategories } from "@/features/categories/queries";
 import { createTransaction } from "@/features/transactions/actions";
@@ -26,39 +28,48 @@ export default async function NewTransactionPage({
 
   if (activeAccounts.length === 0) {
     return (
-      <main className="mx-auto max-w-md space-y-4">
-        <h1 className="text-xl font-semibold">Nova transacção</h1>
-        <p className="rounded-md border border-gray-200 p-6 text-center text-sm text-gray-500">
-          Antes de registar movimentos, crie a sua primeira{" "}
-          <Link href="/accounts/new" className="font-medium underline">
-            conta
-          </Link>
-          .
-        </p>
+      <main className="mx-auto max-w-md space-y-6">
+        <h1 className="font-display text-2xl font-semibold tracking-tight">
+          Novo movimento
+        </h1>
+        <Card>
+          <CardContent className="py-10 text-center text-sm text-muted-foreground">
+            Antes de registar movimentos, crie a sua primeira{" "}
+            <Link
+              href="/accounts/new"
+              className="font-medium text-foreground underline underline-offset-4"
+            >
+              conta
+            </Link>
+            .
+          </CardContent>
+        </Card>
       </main>
     );
   }
 
   return (
     <main className="mx-auto max-w-md space-y-6">
-      <h1 className="text-xl font-semibold">Nova transacção</h1>
+      <h1 className="font-display text-2xl font-semibold tracking-tight">
+        Novo movimento
+      </h1>
 
-      {error ? (
-        <p className="rounded-md border border-red-300 bg-red-50 p-3 text-sm text-red-800">
-          {error}
-        </p>
-      ) : null}
+      {error ? <FormAlert variant="error">{error}</FormAlert> : null}
 
-      <TransactionForm
-        accounts={activeAccounts}
-        categories={categories.map((category) => ({
-          id: category.id,
-          name: category.name,
-          type: category.type,
-        }))}
-        action={createTransaction}
-        submitLabel="Registar"
-      />
+      <Card>
+        <CardContent>
+          <TransactionForm
+            accounts={activeAccounts}
+            categories={categories.map((category) => ({
+              id: category.id,
+              name: category.name,
+              type: category.type,
+            }))}
+            action={createTransaction}
+            submitLabel="Registar"
+          />
+        </CardContent>
+      </Card>
     </main>
   );
 }

@@ -1,14 +1,79 @@
+import { Plus } from "lucide-react";
 import Link from "next/link";
 
+import { FormAlert } from "@/components/form-alert";
+import { Badge } from "@/components/ui/badge";
+import { Button } from "@/components/ui/button";
+import { Card, CardContent } from "@/components/ui/card";
 import { archiveAccount, unarchiveAccount } from "@/features/accounts/actions";
 import { listAccountsWithBalance } from "@/features/accounts/queries";
+import type { AccountWithBalance } from "@/features/accounts/queries";
 import { ACCOUNT_TYPE_LABELS } from "@/features/accounts/validation";
 import { formatMinorUnits } from "@/lib/money/format";
+import { cn } from "@/lib/utils";
 
-/**
- * Lista de contas com saldo derivado. Contas arquivadas aparecem numa secção
- * própria e podem ser reactivadas; nunca são eliminadas (D-004).
- */
+function AccountRow({
+  account,
+  archived,
+}: {
+  account: AccountWithBalance;
+  archived?: boolean;
+}) {
+  return (
+    <li className="flex flex-wrap items-center justify-between gap-3 px-5 py-4">
+      <div className="min-w-0">
+        <p
+          className={cn(
+            "flex items-center gap-2 font-medium",
+            archived && "text-muted-foreground",
+          )}
+        >
+          <span className="truncate">{account.name}</span>
+          {archived ? <Badge variant="secondary">Arquivada</Badge> : null}
+        </p>
+        <p className="text-sm text-muted-foreground">
+          {account.type ? ACCOUNT_TYPE_LABELS[account.type] : ""}
+        </p>
+      </div>
+      <div className="flex items-center gap-3">
+        <span
+          className={cn(
+            "font-display text-lg font-semibold tabular-nums",
+            (account.balance_minor ?? 0) < 0 && "text-destructive",
+            archived && "text-muted-foreground",
+          )}
+        >
+          {formatMinorUnits(
+            account.balance_minor ?? 0,
+            account.currency_code ?? "EUR",
+          )}
+        </span>
+        <div className="flex gap-1">
+          {archived ? (
+            <form action={unarchiveAccount.bind(null, account.id ?? "")}>
+              <Button type="submit" variant="ghost" size="sm">
+                Reactivar
+              </Button>
+            </form>
+          ) : (
+            <>
+              <Button asChild variant="ghost" size="sm">
+                <Link href={`/accounts/${account.id}/edit`}>Editar</Link>
+              </Button>
+              <form action={archiveAccount.bind(null, account.id ?? "")}>
+                <Button type="submit" variant="ghost" size="sm">
+                  Arquivar
+                </Button>
+              </form>
+            </>
+          )}
+        </div>
+      </div>
+    </li>
+  );
+}
+
+/** Contas com saldo derivado. Arquivar preserva o histórico (D-004). */
 export default async function AccountsPage({
   searchParams,
 }: {
@@ -24,105 +89,49 @@ export default async function AccountsPage({
 
   return (
     <main className="space-y-6">
-      <div className="flex flex-wrap items-center justify-between gap-2">
-        <h1 className="text-xl font-semibold">Contas</h1>
-        <Link
-          href="/accounts/new"
-          className="rounded-md bg-gray-900 px-4 py-2 text-sm font-medium text-white hover:bg-gray-700"
-        >
-          Nova conta
-        </Link>
+      <div className="flex flex-wrap items-center justify-between gap-3">
+        <h1 className="font-display text-2xl font-semibold tracking-tight">
+          Contas
+        </h1>
+        <Button asChild>
+          <Link href="/accounts/new">
+            <Plus data-icon="inline-start" />
+            Nova conta
+          </Link>
+        </Button>
       </div>
 
-      {error ? (
-        <p className="rounded-md border border-red-300 bg-red-50 p-3 text-sm text-red-800">
-          {error}
-        </p>
-      ) : null}
+      {error ? <FormAlert variant="error">{error}</FormAlert> : null}
 
       {active.length === 0 ? (
-        <p className="rounded-md border border-gray-200 p-6 text-center text-sm text-gray-500">
-          Ainda não tem contas. Crie a primeira para começar a registar a sua
-          vida financeira.
-        </p>
+        <Card>
+          <CardContent className="py-10 text-center text-sm text-muted-foreground">
+            Ainda não tem contas. Crie a primeira para começar a registar a
+            sua vida financeira.
+          </CardContent>
+        </Card>
       ) : (
-        <ul className="space-y-3">
-          {active.map((account) => (
-            <li
-              key={account.id}
-              className="rounded-md border border-gray-200 p-4"
-            >
-              <div className="flex flex-wrap items-start justify-between gap-2">
-                <div>
-                  <p className="font-medium">{account.name}</p>
-                  <p className="text-sm text-gray-500">
-                    {account.type ? ACCOUNT_TYPE_LABELS[account.type] : ""}
-                  </p>
-                </div>
-                <p className="text-lg font-semibold tabular-nums">
-                  {formatMinorUnits(
-                    account.balance_minor ?? 0,
-                    account.currency_code ?? "EUR",
-                  )}
-                </p>
-              </div>
-              <div className="mt-3 flex flex-wrap gap-4 text-sm">
-                <Link
-                  href={`/accounts/${account.id}/edit`}
-                  className="py-1 underline"
-                >
-                  Editar
-                </Link>
-                <form action={archiveAccount.bind(null, account.id ?? "")}>
-                  <button
-                    type="submit"
-                    className="py-1 text-gray-500 underline hover:text-gray-900"
-                  >
-                    Arquivar
-                  </button>
-                </form>
-              </div>
-            </li>
-          ))}
-        </ul>
+        <Card className="py-0">
+          <ul className="divide-y divide-border">
+            {active.map((account) => (
+              <AccountRow key={account.id} account={account} />
+            ))}
+          </ul>
+        </Card>
       )}
 
       {archived.length > 0 ? (
         <section className="space-y-3">
-          <h2 className="text-sm font-medium text-gray-500">Arquivadas</h2>
-          <ul className="space-y-3">
-            {archived.map((account) => (
-              <li
-                key={account.id}
-                className="rounded-md border border-gray-200 bg-gray-50 p-4"
-              >
-                <div className="flex flex-wrap items-start justify-between gap-2">
-                  <div>
-                    <p className="font-medium text-gray-600">{account.name}</p>
-                    <p className="text-sm text-gray-400">
-                      {account.type ? ACCOUNT_TYPE_LABELS[account.type] : ""}
-                    </p>
-                  </div>
-                  <p className="text-lg font-semibold tabular-nums text-gray-500">
-                    {formatMinorUnits(
-                      account.balance_minor ?? 0,
-                      account.currency_code ?? "EUR",
-                    )}
-                  </p>
-                </div>
-                <div className="mt-3 text-sm">
-                  <form action={unarchiveAccount.bind(null, account.id ?? "")}>
-                    <button
-                      type="submit"
-                      className="py-1 text-gray-500 underline hover:text-gray-900"
-                    >
-                      Reactivar
-                    </button>
-                  </form>
-                </div>
-              </li>
-            ))}
-          </ul>
+          <h2 className="text-sm font-medium text-muted-foreground">
+            Arquivadas
+          </h2>
+          <Card className="bg-muted/40 py-0">
+            <ul className="divide-y divide-border">
+              {archived.map((account) => (
+                <AccountRow key={account.id} account={account} archived />
+              ))}
+            </ul>
+          </Card>
         </section>
       ) : null}
     </main>
