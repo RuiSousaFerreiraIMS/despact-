@@ -122,6 +122,20 @@ These features belong to future versions.
 
 ---
 
+# V2 Scope (decided by the owner on 17 July 2026)
+
+The MVP is complete and in production. V2 unlocks, in this order:
+
+- Open Banking (automatic transaction sync) via GoCardless Bank Account Data — Sprint 5
+- Automatic categorization rules and CSV import — Sprint 6
+- Launch preparation: onboarding tutorial (PWA install), About section, SMTP/email confirmation — Sprint 7
+
+Investments: V3 may add investment account tracking (portfolio value in net worth). The app will NEVER give investment recommendations — this is a permanent product decision, not a phase.
+
+Everything else in "Out of Scope" remains out of scope.
+
+---
+
 # Tech Stack
 
 Frontend

@@ -195,6 +195,23 @@ O proprietário quer que a app o ajude a saber *como* atingir os objectivos. Pri
 
 **Fica para V2 (exige decisão):** alocação da poupança por objectivo com prioridades, simulações de cenários ("e se adiar 6 meses?"), contribuições registadas por objectivo. Qualquer um destes altera o modelo de dados (D-006) e merece ADR próprio.
 
+## V2 EM CURSO — Sprint 5: Open Banking (decidido em 17 de Julho de 2026)
+
+O proprietário decidiu: V2 começa pelo Open Banking (D-009); investimentos serão tracking-only em V3, nunca recomendações (D-010). Âmbito V2 registado em `PROJECT_CONTEXT.md` e critérios em `ROADMAP.md`. Ideias registadas para o Sprint 7 (lançamento): tutorial de instalação PWA (iPhone/Android), secção About.
+
+### Estado do Sprint 5
+
+1. ~~Documentação~~ — D-009, D-010, âmbito V2 e critérios de saída escritos.
+2. ~~Migração `bank_sync`~~ — escrita (`20260717100000_bank_sync.sql`): proveniência (`source`, `external_id` único por utilizador), `bank_connections`, `bank_account_links`, RLS. **Ainda não aplicada** — a CLI está apontada à produção; reapontar ao dev antes.
+3. ~~Cliente GoCardless~~ — `src/lib/gocardless/client.ts` (exclusivo de servidor): token com cache, instituições, requisições, contas/saldos, movimentos booked normalizados; conversão decimal→unidades mínimas testada.
+4. Fluxo de ligação e sincronização (UI + acções + callback) — segue-se, depois da migração aplicada e dos segredos configurados.
+
+### Acções manuais pendentes (proprietário)
+
+- Reapontar a CLI ao dev: `npx supabase link --project-ref <ref-dev>`.
+- Criar conta gratuita em `bankaccountdata.gocardless.com`, gerar *user secrets* (secret_id + secret_key) e colocá-los no `.env.local` como `GOCARDLESS_SECRET_ID` e `GOCARDLESS_SECRET_KEY`. Nunca no chat, Git ou browser.
+- O teste E2E usará a instituição sandbox do fornecedor (`SANDBOXFINANCE_SFIN0000`) antes de qualquer banco real.
+
 ## Procedimento para entregar ao Claude Code
 
 1. Guarde todas as alterações desta pasta num repositório Git ou copie a pasta completa, incluindo `docs/`, `package.json`, `package-lock.json` e `CLAUDE.md`. Não é necessário copiar `node_modules/` nem `.next/`.

@@ -66,6 +66,20 @@ Este documento regista decisões tomadas no Sprint 0. O contexto do projecto con
 
 **Consequência no MVP:** a lista vive numa única função PostgreSQL (sem duplicação entre registo e interface) e é idempotente — não duplica categorias activas com o mesmo nome e tipo.
 
+## D-009 — Open Banking e proveniência de dados (V2)
+
+**Decisão:** a sincronização bancária usa o GoCardless Bank Account Data (AISP licenciado PSD2, plano gratuito, cobertura portuguesa). Movimentos ganham proveniência: `source` (`manual`/`bank`) e `external_id`, com unicidade por utilizador para deduplicação. O consentimento vive em `bank_connections`; o mapeamento banco↔Despact em `bank_account_links`. Ao ligar uma conta, o saldo inicial é ajustado para que o saldo derivado iguale o saldo reportado pelo banco. A sincronização é manual nesta fase e os movimentos importados chegam sem categoria.
+
+**Justificação:** um fornecedor licenciado evita guardar credenciais bancárias e cumpre PSD2. A deduplicação na base de dados (índice único) torna a sincronização idempotente por construção. O ajuste do saldo inicial preserva D-002 sem persistir saldos.
+
+**Consequência:** os segredos do fornecedor existem apenas no servidor e nas variáveis de ambiente. Consentimentos expiram (~90 dias) e a interface tem de expor a renovação. Transferências entre contas próprias importadas chegam como dois movimentos independentes; a sua fusão em par atómico é adiada para o Sprint 6.
+
+## D-010 — Investimentos: acompanhar sim, recomendar nunca
+
+**Decisão:** uma futura versão pode acompanhar contas de investimento e reflectir o seu valor no património. A aplicação nunca recomenda produtos, alocações ou decisões de investimento.
+
+**Justificação:** recomendações de investimento são actividade regulada e contrariam a filosofia de insights determinísticos e explicáveis (D-007). Acompanhar valor é descritivo; recomendar é aconselhamento.
+
 ## Questões adiadas de propósito
 
 - Estratégia de conversão cambial e património em várias moedas.
