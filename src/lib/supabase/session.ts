@@ -21,6 +21,9 @@ const PUBLIC_PATHS = [
   "/auth",
   // Necessário para instalar a PWA sem sessão.
   "/manifest.webmanifest",
+  // Páginas legais públicas (exigidas pelo fornecedor de Open Banking).
+  "/privacy",
+  "/terms",
 ];
 
 function isPublicPath(pathname: string): boolean {
