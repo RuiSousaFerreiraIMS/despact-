@@ -102,6 +102,14 @@
 - Desempenho: fontes self-hosted via `next/font`; apenas dois componentes cliente (formulário de movimento e navegação).
 - Verificado em execução: cabeçalhos, skip link e 404 autenticado.
 
+### V2 Sprint 5 — Open Banking (Enable Banking)
+
+- Fornecedor mudado de GoCardless (descontinuado, fechado a novos registos desde Julho de 2025) para Enable Banking; D-009 revisto.
+- Cliente `src/lib/enablebanking/` exclusivo de servidor: JWT RS256 assinado com a chave privada da aplicação (node:crypto, sem dependências novas), bancos, autorização, sessões, contas, saldos e movimentos com paginação.
+- Fluxo completo: `/banks` (ligações e sincronização), `/banks/connect` (escolha do banco), callback `/api/bank/callback`, `/banks/[id]/link` (mapeamento: cada conta bancária cria uma conta Despact com histórico importado e saldo inicial ajustado ao saldo do banco).
+- Importação idempotente por `external_id` único por utilizador; movimentos `source=bank`, sem categoria; moedas divergentes ignoradas de forma determinística.
+- Verificado com credenciais reais no sandbox: autenticação JWT, listagem de 815 bancos (Mock ASPSP PT incluído), criação de conexão pendente e URL de consentimento. O passo de consentimento (SPA do fornecedor) requer teste manual em browser.
+
 ### Pós-MVP — orientação para objectivos
 
 - Novo insight "Ritmo dos objectivos" (D-007): soma do valor mensal exigido pelos objectivos activos com data-alvo, comparada com a poupança líquida média dos meses anteriores; positivo quando cobre, aviso quando não chega, neutro sem histórico. Regra e período visíveis.

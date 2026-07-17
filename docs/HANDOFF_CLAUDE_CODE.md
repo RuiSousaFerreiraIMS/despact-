@@ -189,6 +189,16 @@ Proprietário e amigos testaram, sobretudo em mobile. Tratado nesta iteração:
 
 **Candidato prioritário a V2 (não iniciado — exige decisão):** automatização do registo e classificação de despesas/receitas. Caminhos possíveis por ordem de esforço: regras de categorização por descrição → importação CSV → Open Banking. Pedido por dois testadores; é a maior alavanca de retenção identificada.
 
+## V2 Sprint 5 — Open Banking: estado
+
+1. ~~Migração `bank_sync`~~ — proveniência (`source`, `external_id` único), `bank_connections`, `bank_account_links`; aplicada ao dev.
+2. ~~Cliente Enable Banking~~ — JWT RS256 no servidor; credenciais validadas contra a API real (sandbox).
+3. ~~Fluxo completo implementado~~ — ligar banco, consentimento, callback, mapeamento com importação e ajuste de saldo, sincronização manual idempotente, revogação.
+4. **Pendente: teste manual do consentimento** (a SPA do fornecedor exige browser): `npm run dev` → Bancos → Ligar banco → Mock ASPSP (PT) → autorizar → escolher contas → verificar movimentos importados e saldo.
+5. Pendente após o teste: aplicar migração a produção, configurar segredos na Vercel, criar aplicação **Production** no Enable Banking (para os bancos reais do proprietário) e fechar o sprint.
+
+Nota operacional: em sandbox só aparecem bancos fictícios; os bancos portugueses reais exigem a aplicação Production (restrita às contas do proprietário até haver contrato).
+
 ## Orientação para objectivos (pedido do proprietário, 16 de Julho de 2026)
 
 O proprietário quer que a app o ajude a saber *como* atingir os objectivos. Primeiro passo entregue de forma determinística (D-007): cada objectivo com data-alvo mostra o valor mensal necessário (`goalPace`), e o painel compara a soma desses ritmos com a poupança média real (insight "Ritmo dos objectivos").
