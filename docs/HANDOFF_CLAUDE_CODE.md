@@ -194,10 +194,17 @@ Proprietário e amigos testaram, sobretudo em mobile. Tratado nesta iteração:
 1. ~~Migração `bank_sync`~~ — proveniência (`source`, `external_id` único), `bank_connections`, `bank_account_links`; aplicada ao dev.
 2. ~~Cliente Enable Banking~~ — JWT RS256 no servidor; credenciais validadas contra a API real (sandbox).
 3. ~~Fluxo completo implementado~~ — ligar banco, consentimento, callback, mapeamento com importação e ajuste de saldo, sincronização manual idempotente, revogação.
-4. **Pendente: teste manual do consentimento** (a SPA do fornecedor exige browser): `npm run dev` → Bancos → Ligar banco → Mock ASPSP (PT) → autorizar → escolher contas → verificar movimentos importados e saldo.
-5. Pendente após o teste: aplicar migração a produção, configurar segredos na Vercel, criar aplicação **Production** no Enable Banking (para os bancos reais do proprietário) e fechar o sprint.
+4. ~~Teste manual do consentimento~~ — feito pelo proprietário no sandbox (Mock ASPSP): consentimento, mapeamento, importação e sincronização confirmados.
+5. ~~Migração em produção e deploy~~ — 6/6 migrações sincronizadas; merge em `main` e rotas verificadas em produção.
 
-Nota operacional: em sandbox só aparecem bancos fictícios; os bancos portugueses reais exigem a aplicação Production (restrita às contas do proprietário até haver contrato).
+### Pendente para activar bancos reais em produção (proprietário)
+
+- Concluir a aplicação **Production** no Enable Banking (Privacy/Terms URLs vazios no modo restrito; se forem exigidos, criar `/privacy` e `/terms` no Despact primeiro).
+- Na Vercel (âmbito Production): `ENABLE_BANKING_APP_ID` e `ENABLE_BANKING_PRIVATE_KEY_BASE64` da aplicação Production; fazer Redeploy.
+- No Control Panel do Enable Banking: whitelist das contas próprias (modo restrito).
+- Testar em `despact.vercel.app`: Bancos → banco real → consentimento → importação.
+
+Nota operacional: em sandbox só aparecem bancos fictícios; os bancos reais exigem a aplicação Production. Terceiros só com contrato comercial + KYB (D-009); até lá usam o CSV do Sprint 6.
 
 ## Orientação para objectivos (pedido do proprietário, 16 de Julho de 2026)
 
