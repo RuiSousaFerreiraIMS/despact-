@@ -102,6 +102,11 @@
 - Desempenho: fontes self-hosted via `next/font`; apenas dois componentes cliente (formulário de movimento e navegação).
 - Verificado em execução: cabeçalhos, skip link e 404 autenticado.
 
+### V2 Sprint 5 — melhorias (feedback do proprietário)
+
+- Pesquisa de bancos em `/banks/connect` (componente cliente `BankPicker`): filtro por nome, sem distinguir acentos nem maiúsculas, com contador e estado vazio; lista com scroll próprio. Verificado no browser.
+- Nota de uso registada: em modo restrito só as contas incluídas na activação ("link accounts") do Enable Banking ficam acessíveis; ligar mais contas exige repetir a activação e autorizá-las.
+
 ### V2 Sprint 5 — Open Banking (Enable Banking)
 
 - Fornecedor mudado de GoCardless (descontinuado, fechado a novos registos desde Julho de 2025) para Enable Banking; D-009 revisto.
