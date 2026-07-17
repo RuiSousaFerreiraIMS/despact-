@@ -1,10 +1,8 @@
-/* eslint-disable @next/next/no-img-element */
 import Link from "next/link";
 
 import { FormAlert } from "@/components/form-alert";
 import { Button } from "@/components/ui/button";
-import { Card } from "@/components/ui/card";
-import { startBankConnection } from "@/features/bank/actions";
+import { BankPicker } from "@/features/bank/bank-picker";
 import { listAspsps } from "@/lib/enablebanking/client";
 
 /**
@@ -46,44 +44,7 @@ export default async function ConnectBankPage({
           configuração do fornecedor e tente novamente.
         </FormAlert>
       ) : (
-        <Card className="py-0">
-          <ul className="divide-y divide-border">
-            {banks.map((bank) => (
-              <li key={`${bank.country}:${bank.name}`}>
-                <form action={startBankConnection}>
-                  <input type="hidden" name="aspsp_name" value={bank.name} />
-                  <input
-                    type="hidden"
-                    name="aspsp_country"
-                    value={bank.country}
-                  />
-                  <button
-                    type="submit"
-                    className="flex w-full items-center gap-3 px-5 py-3.5 text-left transition-colors hover:bg-muted"
-                  >
-                    {bank.logo ? (
-                      <img
-                        src={bank.logo}
-                        alt=""
-                        className="size-8 rounded-md object-contain"
-                      />
-                    ) : (
-                      <span className="size-8 rounded-md bg-muted" />
-                    )}
-                    <span className="min-w-0">
-                      <span className="block truncate text-sm font-medium">
-                        {bank.name}
-                      </span>
-                      <span className="block text-xs text-muted-foreground">
-                        {bank.country}
-                      </span>
-                    </span>
-                  </button>
-                </form>
-              </li>
-            ))}
-          </ul>
-        </Card>
+        <BankPicker banks={banks} />
       )}
 
       <Button asChild variant="outline">
