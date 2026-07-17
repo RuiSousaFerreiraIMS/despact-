@@ -2,6 +2,7 @@
 
 import {
   ArrowLeftRight,
+  Landmark,
   LayoutDashboard,
   Plus,
   Tags,
@@ -19,6 +20,7 @@ const NAV_ITEMS = [
   { href: "/transactions", label: "Movimentos", icon: ArrowLeftRight },
   { href: "/categories", label: "Categorias", icon: Tags },
   { href: "/goals", label: "Objectivos", icon: Target },
+  { href: "/banks", label: "Bancos", icon: Landmark },
 ] as const;
 
 function isActive(pathname: string, href: string, exact?: boolean): boolean {

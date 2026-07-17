@@ -50,6 +50,100 @@ export type Database = {
         }
         Relationships: []
       }
+      bank_account_links: {
+        Row: {
+          account_id: string
+          connection_id: string
+          created_at: string
+          external_account_id: string
+          id: string
+          last_synced_at: string | null
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          account_id: string
+          connection_id: string
+          created_at?: string
+          external_account_id: string
+          id?: string
+          last_synced_at?: string | null
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          account_id?: string
+          connection_id?: string
+          created_at?: string
+          external_account_id?: string
+          id?: string
+          last_synced_at?: string | null
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "bank_account_links_account_id_user_id_fkey"
+            columns: ["account_id", "user_id"]
+            isOneToOne: false
+            referencedRelation: "account_balances"
+            referencedColumns: ["id", "user_id"]
+          },
+          {
+            foreignKeyName: "bank_account_links_account_id_user_id_fkey"
+            columns: ["account_id", "user_id"]
+            isOneToOne: false
+            referencedRelation: "accounts"
+            referencedColumns: ["id", "user_id"]
+          },
+          {
+            foreignKeyName: "bank_account_links_connection_id_user_id_fkey"
+            columns: ["connection_id", "user_id"]
+            isOneToOne: false
+            referencedRelation: "bank_connections"
+            referencedColumns: ["id", "user_id"]
+          },
+        ]
+      }
+      bank_connections: {
+        Row: {
+          consent_expires_at: string | null
+          created_at: string
+          id: string
+          institution_id: string
+          institution_name: string
+          provider: string
+          requisition_id: string
+          status: string
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          consent_expires_at?: string | null
+          created_at?: string
+          id?: string
+          institution_id: string
+          institution_name: string
+          provider?: string
+          requisition_id: string
+          status?: string
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          consent_expires_at?: string | null
+          created_at?: string
+          id?: string
+          institution_id?: string
+          institution_name?: string
+          provider?: string
+          requisition_id?: string
+          status?: string
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
       categories: {
         Row: {
           archived_at: string | null
@@ -151,9 +245,11 @@ export type Database = {
           created_at: string
           currency_code: string
           description: string | null
+          external_id: string | null
           id: string
           kind: Database["public"]["Enums"]["transaction_kind"]
           occurred_on: string
+          source: Database["public"]["Enums"]["transaction_source"]
           transfer_id: string | null
           updated_at: string
           user_id: string
@@ -165,9 +261,11 @@ export type Database = {
           created_at?: string
           currency_code: string
           description?: string | null
+          external_id?: string | null
           id?: string
           kind: Database["public"]["Enums"]["transaction_kind"]
           occurred_on: string
+          source?: Database["public"]["Enums"]["transaction_source"]
           transfer_id?: string | null
           updated_at?: string
           user_id: string
@@ -179,9 +277,11 @@ export type Database = {
           created_at?: string
           currency_code?: string
           description?: string | null
+          external_id?: string | null
           id?: string
           kind?: Database["public"]["Enums"]["transaction_kind"]
           occurred_on?: string
+          source?: Database["public"]["Enums"]["transaction_source"]
           transfer_id?: string | null
           updated_at?: string
           user_id?: string
@@ -250,6 +350,7 @@ export type Database = {
       category_type: "income" | "expense"
       goal_status: "active" | "completed" | "archived"
       transaction_kind: "income" | "expense" | "transfer"
+      transaction_source: "manual" | "bank"
     }
     CompositeTypes: {
       [_ in never]: never
@@ -381,6 +482,7 @@ export const Constants = {
       category_type: ["income", "expense"],
       goal_status: ["active", "completed", "archived"],
       transaction_kind: ["income", "expense", "transfer"],
+      transaction_source: ["manual", "bank"],
     },
   },
 } as const

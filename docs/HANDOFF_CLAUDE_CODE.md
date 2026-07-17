@@ -189,11 +189,38 @@ Proprietário e amigos testaram, sobretudo em mobile. Tratado nesta iteração:
 
 **Candidato prioritário a V2 (não iniciado — exige decisão):** automatização do registo e classificação de despesas/receitas. Caminhos possíveis por ordem de esforço: regras de categorização por descrição → importação CSV → Open Banking. Pedido por dois testadores; é a maior alavanca de retenção identificada.
 
+## V2 Sprint 5 — Open Banking: estado
+
+1. ~~Migração `bank_sync`~~ — proveniência (`source`, `external_id` único), `bank_connections`, `bank_account_links`; aplicada ao dev.
+2. ~~Cliente Enable Banking~~ — JWT RS256 no servidor; credenciais validadas contra a API real (sandbox).
+3. ~~Fluxo completo implementado~~ — ligar banco, consentimento, callback, mapeamento com importação e ajuste de saldo, sincronização manual idempotente, revogação.
+4. **Pendente: teste manual do consentimento** (a SPA do fornecedor exige browser): `npm run dev` → Bancos → Ligar banco → Mock ASPSP (PT) → autorizar → escolher contas → verificar movimentos importados e saldo.
+5. Pendente após o teste: aplicar migração a produção, configurar segredos na Vercel, criar aplicação **Production** no Enable Banking (para os bancos reais do proprietário) e fechar o sprint.
+
+Nota operacional: em sandbox só aparecem bancos fictícios; os bancos portugueses reais exigem a aplicação Production (restrita às contas do proprietário até haver contrato).
+
 ## Orientação para objectivos (pedido do proprietário, 16 de Julho de 2026)
 
 O proprietário quer que a app o ajude a saber *como* atingir os objectivos. Primeiro passo entregue de forma determinística (D-007): cada objectivo com data-alvo mostra o valor mensal necessário (`goalPace`), e o painel compara a soma desses ritmos com a poupança média real (insight "Ritmo dos objectivos").
 
 **Fica para V2 (exige decisão):** alocação da poupança por objectivo com prioridades, simulações de cenários ("e se adiar 6 meses?"), contribuições registadas por objectivo. Qualquer um destes altera o modelo de dados (D-006) e merece ADR próprio.
+
+## V2 EM CURSO — Sprint 5: Open Banking (decidido em 17 de Julho de 2026)
+
+O proprietário decidiu: V2 começa pelo Open Banking (D-009); investimentos serão tracking-only em V3, nunca recomendações (D-010). Âmbito V2 registado em `PROJECT_CONTEXT.md` e critérios em `ROADMAP.md`. Ideias registadas para o Sprint 7 (lançamento): tutorial de instalação PWA (iPhone/Android), secção About.
+
+### Estado do Sprint 5
+
+1. ~~Documentação~~ — D-009, D-010, âmbito V2 e critérios de saída escritos.
+2. ~~Migração `bank_sync`~~ — escrita (`20260717100000_bank_sync.sql`): proveniência (`source`, `external_id` único por utilizador), `bank_connections`, `bank_account_links`, RLS. **Ainda não aplicada** — a CLI está apontada à produção; reapontar ao dev antes.
+3. ~~Cliente GoCardless~~ — `src/lib/gocardless/client.ts` (exclusivo de servidor): token com cache, instituições, requisições, contas/saldos, movimentos booked normalizados; conversão decimal→unidades mínimas testada.
+4. Fluxo de ligação e sincronização (UI + acções + callback) — segue-se, depois da migração aplicada e dos segredos configurados.
+
+### Acções manuais pendentes (proprietário)
+
+- Reapontar a CLI ao dev: `npx supabase link --project-ref <ref-dev>`.
+- Criar conta gratuita em `bankaccountdata.gocardless.com`, gerar *user secrets* (secret_id + secret_key) e colocá-los no `.env.local` como `GOCARDLESS_SECRET_ID` e `GOCARDLESS_SECRET_KEY`. Nunca no chat, Git ou browser.
+- O teste E2E usará a instituição sandbox do fornecedor (`SANDBOXFINANCE_SFIN0000`) antes de qualquer banco real.
 
 ## Procedimento para entregar ao Claude Code
 

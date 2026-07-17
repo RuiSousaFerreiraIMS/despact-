@@ -1,6 +1,6 @@
 "use client";
 
-import { LogOut, Tags } from "lucide-react";
+import { Landmark, LogOut, Tags } from "lucide-react";
 import Link from "next/link";
 
 import {
@@ -49,6 +49,12 @@ export function UserMenu({
           <Link href="/categories">
             <Tags className="size-4" />
             Categorias
+          </Link>
+        </DropdownMenuItem>
+        <DropdownMenuItem asChild>
+          <Link href="/banks">
+            <Landmark className="size-4" />
+            Bancos
           </Link>
         </DropdownMenuItem>
         <DropdownMenuSeparator />

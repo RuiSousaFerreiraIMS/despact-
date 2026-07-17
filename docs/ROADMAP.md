@@ -75,6 +75,27 @@ O roadmap descreve resultados verificáveis. Cada sprint começa com uma confirm
 - Estados vazios, erros e carregamentos são tratados.
 - É feita uma revisão final de acessibilidade, desempenho e segurança.
 
+## V2 — Sprint 5: Open Banking
+
+**Objectivo:** movimentos bancários a entrar automaticamente no Despact, com consentimento PSD2, sem duplicados e sem quebrar as regras financeiras existentes.
+
+### Critérios de saída
+
+- O utilizador liga um banco através de consentimento no site do próprio banco (GoCardless Bank Account Data).
+- Cada conta bancária externa é mapeada explicitamente para uma conta Despact; o saldo bate certo com o banco após a ligação.
+- Sincronizar é idempotente: repetir não duplica movimentos (`external_id` único por utilizador).
+- Movimentos importados respeitam D-001/D-003 (inteiros, sinal por tipo) e chegam sem categoria.
+- Segredos do fornecedor apenas no servidor e nos ambientes; nunca no browser ou repositório.
+- Falhas do fornecedor (consentimento expirado, banco indisponível) apresentam erros compreensíveis.
+
+## V2 — Sprint 6: categorização automática e CSV
+
+**Objectivo:** reduzir o trabalho manual de classificação; importar histórico por extracto.
+
+## V2 — Sprint 7: preparação de lançamento
+
+**Objectivo:** tutorial de instalação (PWA em iPhone/Android), secção About, SMTP e confirmação de e-mail reactivada.
+
 ## Padrões de qualidade
 
 - TypeScript em modo estrito; não usar `any` para contornar tipos.
