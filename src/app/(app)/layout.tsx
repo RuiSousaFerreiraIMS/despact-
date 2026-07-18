@@ -3,6 +3,7 @@ import { redirect } from "next/navigation";
 
 import { BottomNav, SidebarNav } from "@/components/app-nav";
 import { UserMenu } from "@/components/user-menu";
+import { BankAutoSync } from "@/features/bank/bank-auto-sync";
 import { createClient } from "@/lib/supabase/server";
 
 import { logout } from "./actions";
@@ -96,6 +97,7 @@ export default async function AppLayout({
       </div>
 
       <BottomNav />
+      <BankAutoSync />
     </div>
   );
 }

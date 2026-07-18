@@ -74,6 +74,8 @@ Este documento regista decisões tomadas no Sprint 0. O contexto do projecto con
 
 **Consequência:** os segredos do fornecedor existem apenas no servidor e nas variáveis de ambiente. Consentimentos expiram (~90 dias) e a interface tem de expor a renovação. Transferências entre contas próprias importadas chegam como dois movimentos independentes; a sua fusão em par atómico é adiada para o Sprint 6.
 
+**Sincronização automática (revisão de 18 de Julho de 2026):** além do botão manual, a app sincroniza as contas ligadas ao abrir (`syncStaleBankLinks`), corrida com a sessão do próprio utilizador (a RLS aplica-se; sem `service_role`). É moderada por um limiar de 6 horas por conta, respeitando o limite PSD2 de acessos sem o utilizador presente (~4/dia). A sincronização em segundo plano com a app fechada (agendador + `service_role`) foi ponderada e adiada por decisão do proprietário, para não introduzir um segredo de acesso elevado.
+
 ## D-010 — Investimentos: acompanhar sim, recomendar nunca
 
 **Decisão:** uma futura versão pode acompanhar contas de investimento e reflectir o seu valor no património. A aplicação nunca recomenda produtos, alocações ou decisões de investimento.

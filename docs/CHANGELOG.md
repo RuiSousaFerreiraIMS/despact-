@@ -104,6 +104,7 @@
 
 ### V2 Sprint 5 — melhorias (feedback do proprietário)
 
+- Sincronização automática ao abrir a app (`syncStaleBankLinks` + componente cliente `BankAutoSync` no layout): actualiza as contas ligadas cuja última sincronização tem mais de 6 horas, com a sessão do próprio utilizador (sem `service_role`). Não bloqueia a página; actualiza a interface se importar algo. Verificada no browser (acção invocada com sucesso ao carregar).
 - Pesquisa de bancos em `/banks/connect` (componente cliente `BankPicker`): filtro por nome, sem distinguir acentos nem maiúsculas, com contador e estado vazio; lista com scroll próprio. Verificado no browser.
 - Nota de uso registada: em modo restrito só as contas incluídas na activação ("link accounts") do Enable Banking ficam acessíveis; ligar mais contas exige repetir a activação e autorizá-las.
 
