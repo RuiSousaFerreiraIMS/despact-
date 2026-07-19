@@ -108,9 +108,14 @@ export default async function CategoriesPage({
 
   return (
     <main className="space-y-6">
-      <h1 className="font-display text-2xl font-semibold tracking-tight">
-        Categorias
-      </h1>
+      <div className="flex flex-wrap items-center justify-between gap-3">
+        <h1 className="font-display text-2xl font-semibold tracking-tight">
+          Categorias
+        </h1>
+        <Button asChild variant="outline" size="sm">
+          <Link href="/categories/rules">Regras automáticas</Link>
+        </Button>
+      </div>
 
       {error ? <FormAlert variant="error">{error}</FormAlert> : null}
 

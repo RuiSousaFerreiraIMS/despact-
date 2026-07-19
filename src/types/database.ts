@@ -174,6 +174,47 @@ export type Database = {
         }
         Relationships: []
       }
+      categorization_rules: {
+        Row: {
+          category_id: string
+          created_at: string
+          id: string
+          match_type: string
+          pattern: string
+          priority: number
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          category_id: string
+          created_at?: string
+          id?: string
+          match_type?: string
+          pattern: string
+          priority?: number
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          category_id?: string
+          created_at?: string
+          id?: string
+          match_type?: string
+          pattern?: string
+          priority?: number
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "categorization_rules_category_id_user_id_fkey"
+            columns: ["category_id", "user_id"]
+            isOneToOne: false
+            referencedRelation: "categories"
+            referencedColumns: ["id", "user_id"]
+          },
+        ]
+      }
       goals: {
         Row: {
           created_at: string

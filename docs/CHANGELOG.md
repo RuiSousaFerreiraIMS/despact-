@@ -102,6 +102,14 @@
 - Desempenho: fontes self-hosted via `next/font`; apenas dois componentes cliente (formulário de movimento e navegação).
 - Verificado em execução: cabeçalhos, skip link e 404 autenticado.
 
+### V2 Sprint 6 (Unidade A) — categorização automática por regras
+
+- Migração `categorization_rules` (D-011): padrão, tipo de correspondência, categoria, prioridade; RLS e chave composta com `categories`.
+- Motor `categorize` em TypeScript puro (`src/features/categorization/rules.ts`): determinístico, sem acentos/maiúsculas, respeita prioridade e tipo; 6 testes unitários (33 no total).
+- Página **Categorias → Regras** (`/categories/rules`): criar regras (contém/começa por/é igual a → categoria), apagar, e "Aplicar às não categorizadas".
+- Movimentos importados do banco passam a chegar já categorizados quando uma regra corresponde (sync bancário liga-se ao motor).
+- Verificado por E2E na BD (6/6): RLS das regras, aplicação correcta, tipo respeitado, movimentos sem correspondência ficam intactos.
+
 ### V2 Sprint 5 — melhorias (feedback do proprietário)
 
 - Sincronização automática ao abrir a app (`syncStaleBankLinks` + componente cliente `BankAutoSync` no layout): actualiza as contas ligadas cuja última sincronização tem mais de 6 horas, com a sessão do próprio utilizador (sem `service_role`). Não bloqueia a página; actualiza a interface se importar algo. Verificada no browser (acção invocada com sucesso ao carregar).
