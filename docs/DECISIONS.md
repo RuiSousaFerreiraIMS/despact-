@@ -76,6 +76,14 @@ Este documento regista decisões tomadas no Sprint 0. O contexto do projecto con
 
 **Sincronização automática (revisão de 18 de Julho de 2026):** além do botão manual, a app sincroniza as contas ligadas ao abrir (`syncStaleBankLinks`), corrida com a sessão do próprio utilizador (a RLS aplica-se; sem `service_role`). É moderada por um limiar de 6 horas por conta, respeitando o limite PSD2 de acessos sem o utilizador presente (~4/dia). A sincronização em segundo plano com a app fechada (agendador + `service_role`) foi ponderada e adiada por decisão do proprietário, para não introduzir um segredo de acesso elevado.
 
+## D-011 — Regras de categorização automática (V2 Sprint 6)
+
+**Decisão:** regras pessoais e determinísticas atribuem uma categoria a movimentos a partir da descrição (`contains`/`starts_with`/`equals`, sem acentos nem maiúsculas). A primeira regra que casa, por prioridade, vence. As regras só preenchem movimentos **sem categoria** — nunca sobrepõem classificações manuais — e só se aplicam quando o tipo da categoria coincide com o do movimento. Aplicam-se automaticamente na importação bancária e, a pedido, aos movimentos existentes ("Aplicar às não categorizadas").
+
+**Justificação:** determinismo e transparência (coerente com D-007): o utilizador percebe e controla cada regra, sem IA. Manter a lógica em TypeScript puro torna-a testável e reutilizável na importação CSV (Sprint 6, Unidade B).
+
+**Consequência:** a categorização automática não adivinha nem aprende; depende das regras que o utilizador cria. Regras e categorias partilham a propriedade por utilizador (chave composta) e RLS.
+
 ## D-010 — Investimentos: acompanhar sim, recomendar nunca
 
 **Decisão:** uma futura versão pode acompanhar contas de investimento e reflectir o seu valor no património. A aplicação nunca recomenda produtos, alocações ou decisões de investimento.

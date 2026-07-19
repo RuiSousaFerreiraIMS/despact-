@@ -1,3 +1,5 @@
+import { categorize } from "@/features/categorization/rules";
+import { loadRulesForEngine } from "@/features/categorization/queries";
 import { getBookedTransactions } from "@/lib/enablebanking/client";
 import type { ExternalTransaction } from "@/lib/enablebanking/client";
 import { createClient } from "@/lib/supabase/server";
@@ -63,20 +65,29 @@ export async function importBankTransactions(input: {
   const fresh = usable.filter((row) => !known.has(row.externalId));
   let importedSumMinor = 0;
 
+  // Regras de categorização (D-011): os movimentos importados chegam já
+  // categorizados quando uma regra corresponde à descrição.
+  const rules = await loadRulesForEngine();
+
   for (let i = 0; i < fresh.length; i += BATCH_SIZE) {
     const batch = fresh.slice(i, i + BATCH_SIZE);
     const { error } = await supabase.from("transactions").insert(
-      batch.map((row: ExternalTransaction) => ({
-        user_id: input.userId,
-        account_id: input.accountId,
-        kind: row.amountMinor > 0 ? ("income" as const) : ("expense" as const),
-        amount_minor: row.amountMinor,
-        currency_code: input.accountCurrencyCode,
-        occurred_on: row.occurredOn,
-        description: row.description,
-        source: "bank" as const,
-        external_id: row.externalId,
-      })),
+      batch.map((row: ExternalTransaction) => {
+        const kind =
+          row.amountMinor > 0 ? ("income" as const) : ("expense" as const);
+        return {
+          user_id: input.userId,
+          account_id: input.accountId,
+          kind,
+          amount_minor: row.amountMinor,
+          currency_code: input.accountCurrencyCode,
+          occurred_on: row.occurredOn,
+          description: row.description,
+          category_id: categorize({ description: row.description, kind }, rules),
+          source: "bank" as const,
+          external_id: row.externalId,
+        };
+      }),
     );
 
     if (error) {
