@@ -1,8 +1,9 @@
 "use client";
 
 /* eslint-disable @next/next/no-img-element */
-import { Search } from "lucide-react";
+import { Loader2, Search } from "lucide-react";
 import { useMemo, useState } from "react";
+import { useFormStatus } from "react-dom";
 
 import { Card } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
@@ -35,6 +36,42 @@ function normalize(value: string): string {
  * Lista de bancos com pesquisa. Componente cliente apenas pela interacção do
  * filtro; cada banco submete a Server Action `startBankConnection`.
  */
+/** Linha de banco com estado de espera ao iniciar o consentimento. */
+function BankRow({
+  name,
+  country,
+  logo,
+}: {
+  name: string;
+  country: string;
+  logo: string | null;
+}) {
+  const { pending } = useFormStatus();
+
+  return (
+    <button
+      type="submit"
+      disabled={pending}
+      aria-busy={pending}
+      className="flex w-full items-center gap-3 px-5 py-3.5 text-left transition-colors hover:bg-muted disabled:opacity-60"
+    >
+      {pending ? (
+        <Loader2 className="size-8 animate-spin p-1.5 text-muted-foreground" />
+      ) : logo ? (
+        <img src={logo} alt="" className="size-8 rounded-md object-contain" />
+      ) : (
+        <span className="size-8 rounded-md bg-muted" />
+      )}
+      <span className="min-w-0">
+        <span className="block truncate text-sm font-medium">{name}</span>
+        <span className="block text-xs text-muted-foreground">
+          {pending ? "A abrir o banco…" : country}
+        </span>
+      </span>
+    </button>
+  );
+}
+
 export function BankPicker({ banks }: { banks: Bank[] }) {
   const [query, setQuery] = useState("");
 
@@ -78,28 +115,7 @@ export function BankPicker({ banks }: { banks: Bank[] }) {
                     name="aspsp_country"
                     value={bank.country}
                   />
-                  <button
-                    type="submit"
-                    className="flex w-full items-center gap-3 px-5 py-3.5 text-left transition-colors hover:bg-muted"
-                  >
-                    {bank.logo ? (
-                      <img
-                        src={bank.logo}
-                        alt=""
-                        className="size-8 rounded-md object-contain"
-                      />
-                    ) : (
-                      <span className="size-8 rounded-md bg-muted" />
-                    )}
-                    <span className="min-w-0">
-                      <span className="block truncate text-sm font-medium">
-                        {bank.name}
-                      </span>
-                      <span className="block text-xs text-muted-foreground">
-                        {bank.country}
-                      </span>
-                    </span>
-                  </button>
+                  <BankRow name={bank.name} country={bank.country} logo={bank.logo} />
                 </form>
               </li>
             ))}

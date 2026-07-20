@@ -1,6 +1,7 @@
 import Link from "next/link";
 
 import { FormAlert } from "@/components/form-alert";
+import { SubmitButton } from "@/components/submit-button";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
@@ -95,9 +96,9 @@ export default async function NewAccountPage({
             </div>
 
             <div className="flex flex-wrap gap-2 pt-1">
-              <Button type="submit" size="lg">
+              <SubmitButton size="lg" pendingLabel="A criar…">
                 Criar conta
-              </Button>
+              </SubmitButton>
               <Button asChild variant="outline" size="lg">
                 <Link href="/accounts">Cancelar</Link>
               </Button>
