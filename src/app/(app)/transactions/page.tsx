@@ -3,6 +3,7 @@ import {
   ArrowLeftRight,
   ArrowUpRight,
   Plus,
+  Upload,
 } from "lucide-react";
 import Link from "next/link";
 
@@ -121,7 +122,13 @@ export default async function TransactionsPage({
         <h1 className="font-display text-2xl font-semibold tracking-tight">
           Movimentos
         </h1>
-        <div className="flex gap-2">
+        <div className="flex flex-wrap gap-2">
+          <Button asChild variant="outline">
+            <Link href="/transactions/import">
+              <Upload data-icon="inline-start" />
+              Importar CSV
+            </Link>
+          </Button>
           <Button asChild variant="outline">
             <Link href="/transactions/transfer">
               <ArrowLeftRight data-icon="inline-start" />
