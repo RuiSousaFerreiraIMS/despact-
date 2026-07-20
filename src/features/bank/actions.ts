@@ -251,6 +251,90 @@ export async function syncBankLink(linkId: string) {
   );
 }
 
+/**
+ * Reconcilia o saldo de uma conta ligada: importa movimentos novos e ajusta
+ * o saldo inicial para que o saldo derivado iguale o saldo contabilístico
+ * (booked) do banco. Corrige desvios de saldos anteriores. Nota: movimentos
+ * pendentes no banco não são incluídos até serem liquidados.
+ */
+export async function reconcileBankLink(linkId: string) {
+  const userId = await requireUserId();
+  const supabase = await createClient();
+
+  const { data: link } = await supabase
+    .from("bank_account_links")
+    .select("external_account_id, account:accounts(id, currency_code)")
+    .eq("id", linkId)
+    .maybeSingle();
+
+  if (!link || !link.account) {
+    redirect(`/banks?error=${encodeURIComponent("Conta ligada inexistente.")}`);
+  }
+
+  let summary;
+  try {
+    await importBankTransactions({
+      userId,
+      accountId: link.account.id,
+      accountCurrencyCode: link.account.currency_code,
+      externalAccountUid: link.external_account_id,
+    });
+    summary = await getExternalAccountSummary(link.external_account_id);
+  } catch {
+    redirect(
+      `/banks?error=${encodeURIComponent("Não foi possível reconciliar — o consentimento pode ter expirado.")}`,
+    );
+  }
+
+  if (summary.balanceMinor === null) {
+    redirect(
+      `/banks?error=${encodeURIComponent("O banco não devolveu um saldo contabilístico.")}`,
+    );
+  }
+
+  // Ajuste: novo saldo inicial = actual + (saldo booked − saldo derivado).
+  const { data: derivedRow } = await supabase
+    .from("account_balances")
+    .select("balance_minor")
+    .eq("id", link.account.id)
+    .maybeSingle();
+  const { data: accountRow } = await supabase
+    .from("accounts")
+    .select("opening_balance_minor")
+    .eq("id", link.account.id)
+    .maybeSingle();
+
+  if (!derivedRow || !accountRow) {
+    redirect(
+      `/banks?error=${encodeURIComponent("Não foi possível ler o saldo actual.")}`,
+    );
+  }
+
+  const delta = summary.balanceMinor - (derivedRow.balance_minor ?? 0);
+  const newOpening = (accountRow.opening_balance_minor ?? 0) + delta;
+
+  await supabase
+    .from("accounts")
+    .update({ opening_balance_minor: newOpening })
+    .eq("id", link.account.id);
+
+  await supabase
+    .from("bank_account_links")
+    .update({ last_synced_at: new Date().toISOString() })
+    .eq("id", linkId);
+
+  revalidatePath("/banks");
+  revalidatePath("/accounts");
+  revalidatePath("/transactions");
+  redirect(
+    `/banks?message=${encodeURIComponent(
+      delta === 0
+        ? "Saldo já estava alinhado com o banco (movimentos pendentes não contam)."
+        : "Saldo reconciliado com o banco.",
+    )}`,
+  );
+}
+
 /** Revoga uma ligação: remove conexão e mapeamentos; movimentos ficam. */
 export async function deleteBankConnection(connectionId: string) {
   await requireUserId();

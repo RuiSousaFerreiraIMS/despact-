@@ -240,11 +240,18 @@ export async function getExternalAccountSummary(
     ebFetch<BalancesResponse>(`/accounts/${uid}/balances`),
   ]);
 
-  // Preferir o saldo contabilístico; caso contrário, o primeiro disponível.
+  // Preferir de forma determinística o saldo CONTABILÍSTICO (booked), para
+  // ficar coerente com os movimentos que importamos (só booked). Evitar o
+  // saldo "esperado"/disponível (XPCD), que inclui movimentos pendentes e
+  // faria o saldo inicial não bater certo com o histórico importado.
+  // Ordem: closingBooked → interimBooked → forwardAvailable → primeiro.
+  const byType = (type: string) =>
+    balances.balances.find((b) => b.balance_type === type);
   const balance =
-    balances.balances.find((b) =>
-      ["CLBD", "XPCD", "ITBD"].includes(b.balance_type),
-    ) ?? balances.balances[0];
+    byType("CLBD") ??
+    byType("ITBD") ??
+    byType("PRCD") ??
+    balances.balances[0];
 
   return {
     uid,

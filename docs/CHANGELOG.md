@@ -102,6 +102,12 @@
 - Desempenho: fontes self-hosted via `next/font`; apenas dois componentes cliente (formulário de movimento e navegação).
 - Verificado em execução: cabeçalhos, skip link e 404 autenticado.
 
+### Pós-Sprint 6 — correcção de saldo bancário e estados de espera
+
+- Correcção: a escolha do saldo de referência do banco passou a ser determinística e a preferir o saldo contabilístico (booked), evitando o saldo "esperado" que inclui movimentos pendentes e desalinhava o saldo inicial. Documentado: o Despact reflecte movimentos liquidados; compras pendentes só entram quando o banco as fecha.
+- Nova acção "Reconciliar saldo" por conta ligada: importa o que houver e realinha o saldo inicial com o saldo booked do banco, corrigindo desvios sem re-ligar.
+- Estados de espera (`SubmitButton` com `useFormStatus`): spinner e etiqueta de progresso em sincronizar, reconciliar, ligar contas/banco e criar conta; o seletor de bancos mostra "A abrir o banco…" ao iniciar o consentimento.
+
 ### V2 Sprint 6 (Unidade B) — importação CSV
 
 - Ferramentas puras de CSV (`src/features/import/csv.ts`): deteção de separador, parsing com aspas, montantes europeus/americanos (sinais, parênteses, moeda), datas DD/MM e ISO, normalização com coluna única assinada ou débito/crédito separados; 14 testes unitários.

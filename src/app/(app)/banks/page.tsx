@@ -1,12 +1,14 @@
-import { Landmark, Plus, RefreshCw } from "lucide-react";
+import { Landmark, Plus, RefreshCw, Scale } from "lucide-react";
 import Link from "next/link";
 
 import { FormAlert } from "@/components/form-alert";
+import { SubmitButton } from "@/components/submit-button";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import {
   deleteBankConnection,
+  reconcileBankLink,
   syncBankLink,
 } from "@/features/bank/actions";
 import { listBankConnections } from "@/features/bank/queries";
@@ -119,12 +121,30 @@ export default async function BanksPage({
                             </p>
                           </div>
                           {statusKey === "linked" ? (
-                            <form action={syncBankLink.bind(null, link.id)}>
-                              <Button type="submit" variant="outline" size="sm">
-                                <RefreshCw data-icon="inline-start" />
-                                Sincronizar
-                              </Button>
-                            </form>
+                            <div className="flex flex-wrap gap-2">
+                              <form action={syncBankLink.bind(null, link.id)}>
+                                <SubmitButton
+                                  variant="outline"
+                                  size="sm"
+                                  pendingLabel="A sincronizar…"
+                                  icon={<RefreshCw data-icon="inline-start" />}
+                                >
+                                  Sincronizar
+                                </SubmitButton>
+                              </form>
+                              <form
+                                action={reconcileBankLink.bind(null, link.id)}
+                              >
+                                <SubmitButton
+                                  variant="ghost"
+                                  size="sm"
+                                  pendingLabel="A reconciliar…"
+                                  icon={<Scale data-icon="inline-start" />}
+                                >
+                                  Reconciliar saldo
+                                </SubmitButton>
+                              </form>
+                            </div>
                           ) : null}
                         </li>
                       ))}
