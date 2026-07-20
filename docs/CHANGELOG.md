@@ -102,6 +102,15 @@
 - Desempenho: fontes self-hosted via `next/font`; apenas dois componentes cliente (formulário de movimento e navegação).
 - Verificado em execução: cabeçalhos, skip link e 404 autenticado.
 
+### V2 Sprint 6 (Unidade B) — importação CSV
+
+- Ferramentas puras de CSV (`src/features/import/csv.ts`): deteção de separador, parsing com aspas, montantes europeus/americanos (sinais, parênteses, moeda), datas DD/MM e ISO, normalização com coluna única assinada ou débito/crédito separados; 14 testes unitários.
+- Migração: valor `csv` no enum `transaction_source` (proveniência).
+- Assistente `/transactions/import`: escolher conta, carregar CSV, mapear colunas (auto-adivinha pelo cabeçalho), pré-visualizar movimentos válidos e ignorados, e importar.
+- A acção de servidor revalida cada linha, categoriza pelas regras (D-011) e insere com `source=csv`; sem deduplicação automática (aviso na pré-visualização).
+- Disponível para qualquer utilizador — é o caminho de quem não pode ligar o banco directamente (modo restrito).
+- Verificado por E2E na BD (7/7): inserção com `source=csv`, categorização no import, tipos e saldo derivado correctos.
+
 ### V2 Sprint 6 (Unidade A) — categorização automática por regras
 
 - Migração `categorization_rules` (D-011): padrão, tipo de correspondência, categoria, prioridade; RLS e chave composta com `categories`.

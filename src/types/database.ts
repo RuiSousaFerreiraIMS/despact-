@@ -391,7 +391,7 @@ export type Database = {
       category_type: "income" | "expense"
       goal_status: "active" | "completed" | "archived"
       transaction_kind: "income" | "expense" | "transfer"
-      transaction_source: "manual" | "bank"
+      transaction_source: "manual" | "bank" | "csv"
     }
     CompositeTypes: {
       [_ in never]: never
@@ -523,7 +523,7 @@ export const Constants = {
       category_type: ["income", "expense"],
       goal_status: ["active", "completed", "archived"],
       transaction_kind: ["income", "expense", "transfer"],
-      transaction_source: ["manual", "bank"],
+      transaction_source: ["manual", "bank", "csv"],
     },
   },
 } as const
