@@ -95,6 +95,25 @@ export class ProviderError extends Error {
   }
 }
 
+/** Extrai uma mensagem curta do corpo de erro do fornecedor (JSON ou texto). */
+function compactDetail(raw: string): string {
+  const text = raw.trim();
+  if (text === "") {
+    return "";
+  }
+  try {
+    const parsed = JSON.parse(text) as Record<string, unknown>;
+    const message =
+      parsed.message ?? parsed.error ?? parsed.detail ?? parsed.code;
+    if (typeof message === "string" && message.trim() !== "") {
+      return message.trim().slice(0, 140);
+    }
+  } catch {
+    // Não é JSON; usar o texto tal como veio.
+  }
+  return text.slice(0, 140);
+}
+
 /** Mensagem compreensível a partir de um erro do fornecedor. */
 export function providerErrorMessage(error: unknown): string {
   if (error instanceof ProviderError) {
@@ -104,7 +123,10 @@ export function providerErrorMessage(error: unknown): string {
     if (error.status === 401 || error.status === 403) {
       return "O consentimento do banco expirou ou foi revogado. Ligue o banco novamente.";
     }
-    return `O banco recusou o pedido (código ${error.status}). Tente novamente mais tarde.`;
+    // Muitos bancos (ex.: Abanca) devolvem 422/429 ao exceder o limite diário
+    // de acessos automáticos (~4/dia). O detalhe ajuda a confirmar a causa.
+    const detail = compactDetail(error.detail);
+    return `O banco recusou o pedido (código ${error.status})${detail ? ` — ${detail}` : ""}. Se sincronizou várias vezes hoje, aguarde algumas horas.`;
   }
   return "Não foi possível contactar o banco. Tente novamente.";
 }
