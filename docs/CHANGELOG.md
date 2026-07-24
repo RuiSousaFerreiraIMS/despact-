@@ -102,6 +102,12 @@
 - Desempenho: fontes self-hosted via `next/font`; apenas dois componentes cliente (formulário de movimento e navegação).
 - Verificado em execução: cabeçalhos, skip link e 404 autenticado.
 
+### Pós-Sprint 6 — correcção: movimentos do banco a faltar
+
+- Bug corrigido: movimentos liquidados sem `entry_reference` do banco (comum em compras de cartão) eram descartados silenciosamente e nunca importados. Agora recebem um identificador sintético estável (`resolveTransactionExternalId`), pelo que passam a aparecer, mantendo a deduplicação.
+- A consulta de movimentos passa a pedir explicitamente os últimos 90 dias (`date_from`), evitando janelas curtas por defeito.
+- 5 testes unitários novos para o identificador e a conversão de montantes do fornecedor.
+
 ### Pós-Sprint 6 — reconciliação automática ao abrir
 
 - A sincronização ao abrir a app passou a **reconciliar o saldo automaticamente** (além de importar movimentos), sem clique manual. Helper `reconcileAccountBalance` partilhado entre o auto-sync e a acção manual.
