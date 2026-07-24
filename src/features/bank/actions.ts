@@ -10,7 +10,7 @@ import {
 } from "@/lib/enablebanking/client";
 import { createClient } from "@/lib/supabase/server";
 
-import { importBankTransactions } from "./sync";
+import { importBankTransactions, reconcileAccountBalance } from "./sync";
 
 /**
  * Acções de servidor da sincronização bancária (D-009). O consentimento
@@ -271,7 +271,7 @@ export async function reconcileBankLink(linkId: string) {
     redirect(`/banks?error=${encodeURIComponent("Conta ligada inexistente.")}`);
   }
 
-  let summary;
+  let booked: number | null;
   try {
     await importBankTransactions({
       userId,
@@ -279,44 +279,16 @@ export async function reconcileBankLink(linkId: string) {
       accountCurrencyCode: link.account.currency_code,
       externalAccountUid: link.external_account_id,
     });
-    summary = await getExternalAccountSummary(link.external_account_id);
+    booked = await reconcileAccountBalance(
+      supabase,
+      link.account.id,
+      link.external_account_id,
+    );
   } catch {
     redirect(
       `/banks?error=${encodeURIComponent("Não foi possível reconciliar — o consentimento pode ter expirado.")}`,
     );
   }
-
-  if (summary.balanceMinor === null) {
-    redirect(
-      `/banks?error=${encodeURIComponent("O banco não devolveu um saldo contabilístico.")}`,
-    );
-  }
-
-  // Ajuste: novo saldo inicial = actual + (saldo booked − saldo derivado).
-  const { data: derivedRow } = await supabase
-    .from("account_balances")
-    .select("balance_minor")
-    .eq("id", link.account.id)
-    .maybeSingle();
-  const { data: accountRow } = await supabase
-    .from("accounts")
-    .select("opening_balance_minor")
-    .eq("id", link.account.id)
-    .maybeSingle();
-
-  if (!derivedRow || !accountRow) {
-    redirect(
-      `/banks?error=${encodeURIComponent("Não foi possível ler o saldo actual.")}`,
-    );
-  }
-
-  const delta = summary.balanceMinor - (derivedRow.balance_minor ?? 0);
-  const newOpening = (accountRow.opening_balance_minor ?? 0) + delta;
-
-  await supabase
-    .from("accounts")
-    .update({ opening_balance_minor: newOpening })
-    .eq("id", link.account.id);
 
   await supabase
     .from("bank_account_links")
@@ -328,9 +300,9 @@ export async function reconcileBankLink(linkId: string) {
   revalidatePath("/transactions");
   redirect(
     `/banks?message=${encodeURIComponent(
-      delta === 0
-        ? "Saldo já estava alinhado com o banco (movimentos pendentes não contam)."
-        : "Saldo reconciliado com o banco.",
+      booked === null
+        ? "Movimentos actualizados; o banco não devolveu saldo contabilístico."
+        : "Saldo reconciliado com o banco (movimentos pendentes não contam).",
     )}`,
   );
 }

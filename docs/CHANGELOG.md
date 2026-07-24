@@ -102,6 +102,12 @@
 - Desempenho: fontes self-hosted via `next/font`; apenas dois componentes cliente (formulário de movimento e navegação).
 - Verificado em execução: cabeçalhos, skip link e 404 autenticado.
 
+### Pós-Sprint 6 — reconciliação automática ao abrir
+
+- A sincronização ao abrir a app passou a **reconciliar o saldo automaticamente** (além de importar movimentos), sem clique manual. Helper `reconcileAccountBalance` partilhado entre o auto-sync e a acção manual.
+- Intervalo de arrefecimento do auto-sync ajustado de 6h para 3h — mais fresco, respeitando o limite PSD2 de ~4 acessos automáticos por dia.
+- Registado o limite inerente: movimentos pendentes no banco só aparecem quando este os liquida (1-3 dias úteis); nenhuma cadência de sincronização o contorna.
+
 ### Pós-Sprint 6 — correcção de saldo bancário e estados de espera
 
 - Correcção: a escolha do saldo de referência do banco passou a ser determinística e a preferir o saldo contabilístico (booked), evitando o saldo "esperado" que inclui movimentos pendentes e desalinhava o saldo inicial. Documentado: o Despact reflecte movimentos liquidados; compras pendentes só entram quando o banco as fecha.

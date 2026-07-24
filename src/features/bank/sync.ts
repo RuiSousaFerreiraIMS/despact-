@@ -1,8 +1,59 @@
 import { categorize } from "@/features/categorization/rules";
 import { loadRulesForEngine } from "@/features/categorization/queries";
-import { getBookedTransactions } from "@/lib/enablebanking/client";
+import {
+  getBookedTransactions,
+  getExternalAccountSummary,
+} from "@/lib/enablebanking/client";
 import type { ExternalTransaction } from "@/lib/enablebanking/client";
 import { createClient } from "@/lib/supabase/server";
+
+type ServerClient = Awaited<ReturnType<typeof createClient>>;
+
+/**
+ * Realinha o saldo inicial de uma conta com o saldo contabilístico (booked)
+ * do banco: novo saldo inicial = actual + (saldo booked − saldo derivado).
+ * Movimentos pendentes no banco não contam até serem liquidados. Devolve o
+ * saldo booked lido, ou `null` se indisponível.
+ */
+export async function reconcileAccountBalance(
+  supabase: ServerClient,
+  accountId: string,
+  externalAccountUid: string,
+): Promise<number | null> {
+  const summary = await getExternalAccountSummary(externalAccountUid);
+  if (summary.balanceMinor === null) {
+    return null;
+  }
+
+  const [{ data: derived }, { data: account }] = await Promise.all([
+    supabase
+      .from("account_balances")
+      .select("balance_minor")
+      .eq("id", accountId)
+      .maybeSingle(),
+    supabase
+      .from("accounts")
+      .select("opening_balance_minor")
+      .eq("id", accountId)
+      .maybeSingle(),
+  ]);
+
+  if (!derived || !account) {
+    return summary.balanceMinor;
+  }
+
+  const delta = summary.balanceMinor - (derived.balance_minor ?? 0);
+  if (delta !== 0) {
+    await supabase
+      .from("accounts")
+      .update({
+        opening_balance_minor: (account.opening_balance_minor ?? 0) + delta,
+      })
+      .eq("id", accountId);
+  }
+
+  return summary.balanceMinor;
+}
 
 /**
  * Importação de movimentos bancários (D-009).
