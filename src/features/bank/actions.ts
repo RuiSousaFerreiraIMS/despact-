@@ -6,6 +6,7 @@ import { redirect } from "next/navigation";
 
 import {
   getExternalAccountSummary,
+  providerErrorMessage,
   startAuthorization,
 } from "@/lib/enablebanking/client";
 import { createClient } from "@/lib/supabase/server";
@@ -228,10 +229,8 @@ export async function syncBankLink(linkId: string) {
       accountCurrencyCode: link.account.currency_code,
       externalAccountUid: link.external_account_id,
     });
-  } catch {
-    redirect(
-      `/banks?error=${encodeURIComponent("Não foi possível sincronizar — o consentimento pode ter expirado. Ligue o banco novamente.")}`,
-    );
+  } catch (error) {
+    redirect(`/banks?error=${encodeURIComponent(providerErrorMessage(error))}`);
   }
 
   await supabase
@@ -284,10 +283,8 @@ export async function reconcileBankLink(linkId: string) {
       link.account.id,
       link.external_account_id,
     );
-  } catch {
-    redirect(
-      `/banks?error=${encodeURIComponent("Não foi possível reconciliar — o consentimento pode ter expirado.")}`,
-    );
+  } catch (error) {
+    redirect(`/banks?error=${encodeURIComponent(providerErrorMessage(error))}`);
   }
 
   await supabase

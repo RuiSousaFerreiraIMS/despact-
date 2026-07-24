@@ -102,6 +102,11 @@
 - Desempenho: fontes self-hosted via `next/font`; apenas dois componentes cliente (formulário de movimento e navegação).
 - Verificado em execução: cabeçalhos, skip link e 404 autenticado.
 
+### Pós-Sprint 6 — sync robusto e erros honestos
+
+- O pedido de 90 dias (`date_from`) podia ser rejeitado por alguns bancos (ex.: Abanca), falhando a sincronização. Agora, se falhar com `date_from`, repete sem o parâmetro (janela por defeito) em vez de falhar.
+- Erros do fornecedor deixam de dizer sempre "consentimento expirou": `ProviderError` transporta o código HTTP e a mensagem distingue limite de acessos (429), consentimento inválido (401/403) e outros erros.
+
 ### Pós-Sprint 6 — correcção: movimentos do banco a faltar
 
 - Bug corrigido: movimentos liquidados sem `entry_reference` do banco (comum em compras de cartão) eram descartados silenciosamente e nunca importados. Agora recebem um identificador sintético estável (`resolveTransactionExternalId`), pelo que passam a aparecer, mantendo a deduplicação.
