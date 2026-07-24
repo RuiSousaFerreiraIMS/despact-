@@ -1,4 +1,4 @@
-import { createSign } from "node:crypto";
+import { createHash, createSign } from "node:crypto";
 
 /**
  * Cliente Enable Banking (D-009).
@@ -296,11 +296,40 @@ interface TransactionsResponse {
 }
 
 const MAX_PAGES = 10;
+const HISTORY_DAYS = 90;
+
+type ProviderTransaction = TransactionsResponse["transactions"][number];
 
 /**
- * Movimentos contabilizados (BOOK) normalizados, com paginação. Pendentes e
- * movimentos sem identificador/data/montante válidos são ignorados de forma
- * determinística — só importamos factos finais e deduplicáveis.
+ * Identificador estável de um movimento para deduplicação. Usa o
+ * `entry_reference` do banco quando existe; caso contrário, sintetiza um
+ * determinístico a partir dos campos estáveis (data, montante, moeda, sentido
+ * e descrição) — assim, movimentos sem identificador do banco (comum em
+ * compras de cartão) deixam de ser descartados.
+ */
+export function resolveTransactionExternalId(
+  row: ProviderTransaction,
+): string {
+  if (row.entry_reference && row.entry_reference.trim() !== "") {
+    return row.entry_reference.trim();
+  }
+
+  const seed = [
+    row.booking_date ?? row.value_date ?? "",
+    row.transaction_amount.amount,
+    row.transaction_amount.currency,
+    row.credit_debit_indicator,
+    row.remittance_information?.join(" ") ?? "",
+    row.creditor?.name ?? row.debtor?.name ?? "",
+  ].join("|");
+
+  return `syn:${createHash("sha1").update(seed).digest("hex")}`;
+}
+
+/**
+ * Movimentos contabilizados (BOOK) normalizados, com paginação e janela de
+ * 90 dias. Só se ignoram pendentes e linhas sem data ou montante válido; os
+ * que não trazem identificador do banco recebem um id sintético estável.
  */
 export async function getBookedTransactions(
   uid: string,
@@ -308,12 +337,16 @@ export async function getBookedTransactions(
   const normalized: ExternalTransaction[] = [];
   let continuationKey: string | null | undefined;
 
+  const dateFrom = new Date(Date.now() - HISTORY_DAYS * 24 * 60 * 60 * 1000)
+    .toISOString()
+    .slice(0, 10);
+
   for (let page = 0; page < MAX_PAGES; page++) {
-    const query = continuationKey
+    const params = continuationKey
       ? `?continuation_key=${encodeURIComponent(continuationKey)}`
-      : "";
+      : `?date_from=${dateFrom}`;
     const data = await ebFetch<TransactionsResponse>(
-      `/accounts/${uid}/transactions${query}`,
+      `/accounts/${uid}/transactions${params}`,
     );
 
     for (const row of data.transactions) {
@@ -322,8 +355,8 @@ export async function getBookedTransactions(
         row.transaction_amount.amount,
       );
 
+      // Só se descartam pendentes e linhas sem data/montante utilizável.
       if (
-        !row.entry_reference ||
         !occurredOn ||
         magnitude === null ||
         magnitude === 0 ||
@@ -338,7 +371,7 @@ export async function getBookedTransactions(
           : Math.abs(magnitude);
 
       normalized.push({
-        externalId: row.entry_reference,
+        externalId: resolveTransactionExternalId(row),
         amountMinor,
         currencyCode: row.transaction_amount.currency,
         occurredOn,
