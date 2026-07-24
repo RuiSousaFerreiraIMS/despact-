@@ -78,10 +78,35 @@ async function ebFetch<T>(path: string, init?: RequestInit): Promise<T> {
     console.error(
       `Enable Banking ${path} -> ${response.status}: ${body.slice(0, 300)}`,
     );
-    throw new Error("O fornecedor bancário devolveu um erro. Tente novamente.");
+    throw new ProviderError(response.status, body.slice(0, 300));
   }
 
   return (await response.json()) as T;
+}
+
+/** Erro do fornecedor que transporta o código HTTP, para diagnóstico. */
+export class ProviderError extends Error {
+  constructor(
+    readonly status: number,
+    readonly detail: string,
+  ) {
+    super(`Provider error ${status}`);
+    this.name = "ProviderError";
+  }
+}
+
+/** Mensagem compreensível a partir de um erro do fornecedor. */
+export function providerErrorMessage(error: unknown): string {
+  if (error instanceof ProviderError) {
+    if (error.status === 429) {
+      return "O banco limita as sincronizações automáticas (cerca de 4 por dia). Tente daqui a algumas horas.";
+    }
+    if (error.status === 401 || error.status === 403) {
+      return "O consentimento do banco expirou ou foi revogado. Ligue o banco novamente.";
+    }
+    return `O banco recusou o pedido (código ${error.status}). Tente novamente mais tarde.`;
+  }
+  return "Não foi possível contactar o banco. Tente novamente.";
 }
 
 // --- Bancos (ASPSPs) ---------------------------------------------------------
@@ -342,12 +367,28 @@ export async function getBookedTransactions(
     .slice(0, 10);
 
   for (let page = 0; page < MAX_PAGES; page++) {
-    const params = continuationKey
-      ? `?continuation_key=${encodeURIComponent(continuationKey)}`
-      : `?date_from=${dateFrom}`;
-    const data = await ebFetch<TransactionsResponse>(
-      `/accounts/${uid}/transactions${params}`,
-    );
+    let data: TransactionsResponse;
+    if (continuationKey) {
+      data = await ebFetch<TransactionsResponse>(
+        `/accounts/${uid}/transactions?continuation_key=${encodeURIComponent(continuationKey)}`,
+      );
+    } else {
+      // Alguns bancos rejeitam `date_from`; nesse caso, repetir sem o
+      // parâmetro (janela por defeito) em vez de falhar a sincronização.
+      try {
+        data = await ebFetch<TransactionsResponse>(
+          `/accounts/${uid}/transactions?date_from=${dateFrom}`,
+        );
+      } catch (error) {
+        if (error instanceof ProviderError && error.status >= 400 && error.status < 500 && error.status !== 429) {
+          data = await ebFetch<TransactionsResponse>(
+            `/accounts/${uid}/transactions`,
+          );
+        } else {
+          throw error;
+        }
+      }
+    }
 
     for (const row of data.transactions) {
       const occurredOn = row.booking_date ?? row.value_date;
