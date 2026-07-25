@@ -102,6 +102,14 @@
 - Desempenho: fontes self-hosted via `next/font`; apenas dois componentes cliente (formulário de movimento e navegação).
 - Verificado em execução: cabeçalhos, skip link e 404 autenticado.
 
+### Pós-Sprint 6 — reduzir acessos ao banco (causa do 422)
+
+- Diagnóstico: o 422 do Abanca era o limite diário de acessos (~4/dia), disparado por alterações recentes que multiplicaram as chamadas ao banco por sincronização.
+- `getBookedTransactions` faz uma só chamada por página (removido o `date_from` e o retry que duplicava chamadas).
+- Nova `getBookedBalanceMinor` (só `/balances`, 1 acesso) usada na reconciliação, em vez de `getExternalAccountSummary` (detalhes + saldo = 2 acessos).
+- Auto-sync ao abrir passou de 3h para 12h de arrefecimento (~2 syncs/dia; cada um ~2 acessos), mantendo-se dentro do limite. Botão manual continua disponível.
+- 422 (e 429) passam a mostrar mensagem clara de limite atingido, não "erro genérico".
+
 ### Pós-Sprint 6 — sync robusto e erros honestos
 
 - O pedido de 90 dias (`date_from`) podia ser rejeitado por alguns bancos (ex.: Abanca), falhando a sincronização. Agora, se falhar com `date_from`, repete sem o parâmetro (janela por defeito) em vez de falhar.
