@@ -6,14 +6,22 @@
  * Sem I/O — testável isoladamente. O servidor revalida antes de inserir.
  */
 
-/** Deteta o separador mais provável a partir da primeira linha não vazia. */
+/**
+ * Deteta o separador mais provável, somando ocorrências nas primeiras linhas
+ * não vazias (não apenas na primeira, que em extractos costuma ser preâmbulo
+ * como o IBAN, sem separadores).
+ */
 export function detectDelimiter(text: string): "," | ";" | "\t" {
-  const firstLine = text.split(/\r?\n/).find((line) => line.trim() !== "") ?? "";
-  const counts: Record<string, number> = {
-    ";": (firstLine.match(/;/g) ?? []).length,
-    ",": (firstLine.match(/,/g) ?? []).length,
-    "\t": (firstLine.match(/\t/g) ?? []).length,
-  };
+  const lines = text
+    .split(/\r?\n/)
+    .filter((line) => line.trim() !== "")
+    .slice(0, 12);
+  const counts: Record<string, number> = { ";": 0, ",": 0, "\t": 0 };
+  for (const line of lines) {
+    counts[";"] += (line.match(/;/g) ?? []).length;
+    counts[","] += (line.match(/,/g) ?? []).length;
+    counts["\t"] += (line.match(/\t/g) ?? []).length;
+  }
   const best = Object.entries(counts).sort((a, b) => b[1] - a[1])[0];
   return best[1] > 0 ? (best[0] as "," | ";" | "\t") : ",";
 }
@@ -190,8 +198,43 @@ function buildDate(
   return iso;
 }
 
+const HEADER_KEYWORDS = [
+  "data",
+  "date",
+  "montante",
+  "valor",
+  "amount",
+  "descri",
+  "saldo",
+  "débito",
+  "debito",
+  "crédito",
+  "credito",
+  "divisa",
+];
+
+/**
+ * Deteta a linha de cabeçalho da tabela, saltando preâmbulos (IBAN, período,
+ * etc.) comuns nos extractos bancários. Devolve o índice da linha com pelo
+ * menos duas palavras-chave de cabeçalho, ou -1 se não houver cabeçalho.
+ */
+export function detectHeaderRowIndex(rows: string[][]): number {
+  for (let i = 0; i < Math.min(rows.length, 25); i++) {
+    const cells = rows[i].map((c) => c.toLowerCase());
+    const hits = HEADER_KEYWORDS.filter((k) =>
+      cells.some((c) => c.includes(k)),
+    ).length;
+    if (hits >= 2) {
+      return i;
+    }
+  }
+  return -1;
+}
+
 export interface ColumnMapping {
   hasHeader: boolean;
+  /** Linhas iniciais a ignorar (preâmbulo do extracto). */
+  skipRows?: number;
   dateIndex: number;
   descriptionIndex: number;
   /** Coluna única de montante assinado. */
@@ -217,11 +260,13 @@ export function normalizeRows(
   rows: string[][],
   mapping: ColumnMapping,
 ): NormalizeResult {
-  const body = mapping.hasHeader ? rows.slice(1) : rows;
+  const skip = mapping.skipRows ?? 0;
+  const dataStart = skip + (mapping.hasHeader ? 1 : 0);
+  const body = rows.slice(dataStart);
   const result: NormalizeResult = { rows: [], errors: [] };
 
   body.forEach((cells, index) => {
-    const line = index + (mapping.hasHeader ? 2 : 1);
+    const line = index + dataStart + 1;
 
     const occurredOn = parseCsvDate(cells[mapping.dateIndex] ?? "");
     if (!occurredOn) {
