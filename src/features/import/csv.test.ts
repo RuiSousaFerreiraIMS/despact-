@@ -2,6 +2,7 @@ import { describe, expect, it } from "vitest";
 
 import {
   detectDelimiter,
+  detectHeaderRowIndex,
   normalizeRows,
   parseCsv,
   parseCsvAmount,
@@ -13,6 +14,29 @@ describe("detectDelimiter", () => {
     expect(detectDelimiter("a;b;c\n1;2;3")).toBe(";");
     expect(detectDelimiter("a,b,c")).toBe(",");
     expect(detectDelimiter("a\tb\tc")).toBe("\t");
+  });
+
+  it("ignora um preâmbulo sem separadores (ex.: IBAN) e soma nas linhas", () => {
+    const text = "PT50017033320304001778068\nData;Descrição;Montante\n2026-07-25;X;-1,90";
+    expect(detectDelimiter(text)).toBe(";");
+  });
+});
+
+describe("detectHeaderRowIndex", () => {
+  it("encontra o cabeçalho depois do preâmbulo", () => {
+    const rows = [
+      ["PT50017033320304001778068"],
+      ["PERÍODO:", "Movimentos recentes"],
+      ["D. VALOR", "DESCRIÇÃO", "MONTANTE", "SALDO"],
+      ["2026-07-25", "Café", "-1,90", "100"],
+    ];
+    expect(detectHeaderRowIndex(rows)).toBe(2);
+  });
+
+  it("devolve -1 quando não há cabeçalho reconhecível", () => {
+    expect(
+      detectHeaderRowIndex([["2026-07-25", "X", "-1,90"]]),
+    ).toBe(-1);
   });
 });
 
@@ -101,6 +125,32 @@ describe("normalizeRows", () => {
     expect(result.rows).toEqual([
       { occurredOn: "2026-07-18", amountMinor: -3450, description: "Continente" },
       { occurredOn: "2026-07-01", amountMinor: 150000, description: "Salário" },
+    ]);
+  });
+
+  it("salta preâmbulo com skipRows e usa a linha de cabeçalho seguinte", () => {
+    const rows = [
+      ["PT50017033320304001778068"],
+      ["PERÍODO:", "Movimentos recentes", ""],
+      ["D. VALOR", "DESCRIÇÃO", "MONTANTE"],
+      ["2026-07-25", "Farmácia", "-11,90"],
+      ["2026-07-10", "Transferência", "400,00"],
+    ];
+    const result = normalizeRows(rows, {
+      hasHeader: true,
+      skipRows: 2,
+      dateIndex: 0,
+      descriptionIndex: 1,
+      amountIndex: 2,
+    });
+    expect(result.errors).toEqual([]);
+    expect(result.rows).toEqual([
+      { occurredOn: "2026-07-25", amountMinor: -1190, description: "Farmácia" },
+      {
+        occurredOn: "2026-07-10",
+        amountMinor: 40000,
+        description: "Transferência",
+      },
     ]);
   });
 

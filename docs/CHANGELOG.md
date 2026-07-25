@@ -102,6 +102,14 @@
 - Desempenho: fontes self-hosted via `next/font`; apenas dois componentes cliente (formulário de movimento e navegação).
 - Verificado em execução: cabeçalhos, skip link e 404 autenticado.
 
+### Pós-Sprint 6 — importação CSV robusta a extractos reais
+
+- Correcção: a deteção do separador olhava só para a primeira linha; em extractos com preâmbulo (ex.: IBAN do Abanca na 1.ª linha, sem separadores) escolhia mal. Agora soma ocorrências nas primeiras linhas.
+- Nova `detectHeaderRowIndex`: salta automaticamente as linhas de preâmbulo (IBAN, período, tipo de operação) e encontra a linha de cabeçalho real; o assistente ganha um controlo "linhas a ignorar no topo".
+- Escolha automática da data contabilística quando há várias colunas de data.
+- Validado contra um extracto Abanca real: 96 movimentos, 0 ignorados.
+- 4 testes unitários novos (56 no total).
+
 ### Pós-Sprint 6 — reduzir acessos ao banco (causa do 422)
 
 - Diagnóstico: o 422 do Abanca era o limite diário de acessos (~4/dia), disparado por alterações recentes que multiplicaram as chamadas ao banco por sincronização.

@@ -11,7 +11,12 @@ import { NativeSelect } from "@/components/ui/native-select";
 import { formatMinorUnits } from "@/lib/money/format";
 
 import { importCsvTransactions } from "./actions";
-import { detectDelimiter, normalizeRows, parseCsv } from "./csv";
+import {
+  detectDelimiter,
+  detectHeaderRowIndex,
+  normalizeRows,
+  parseCsv,
+} from "./csv";
 import type { ColumnMapping } from "./csv";
 
 interface AccountOption {
@@ -43,6 +48,7 @@ export function ImportWizard({ accounts }: { accounts: AccountOption[] }) {
   const [grid, setGrid] = useState<string[][] | null>(null);
   const [fileName, setFileName] = useState("");
   const [hasHeader, setHasHeader] = useState(true);
+  const [skipRows, setSkipRows] = useState(0);
   const [dateIndex, setDateIndex] = useState(0);
   const [descriptionIndex, setDescriptionIndex] = useState(1);
   const [amountMode, setAmountMode] = useState<AmountMode>("single");
@@ -54,8 +60,9 @@ export function ImportWizard({ accounts }: { accounts: AccountOption[] }) {
 
   const currency =
     accounts.find((a) => a.id === accountId)?.currencyCode ?? "EUR";
-  const columnCount = grid?.[0]?.length ?? 0;
-  const headers = grid && hasHeader ? grid[0] : [];
+  const headerRow = grid?.[skipRows] ?? [];
+  const columnCount = headerRow.length;
+  const headers = hasHeader ? headerRow : [];
 
   async function onFile(file: File) {
     setError(null);
@@ -70,22 +77,29 @@ export function ImportWizard({ accounts }: { accounts: AccountOption[] }) {
     setFileName(file.name);
     setGrid(rows);
 
-    // Adivinhar colunas pelo cabeçalho, se existir.
-    const first = rows[0].map((c) => c.toLowerCase());
-    const looksLikeHeader = first.some((c) =>
-      ["data", "date", "descri", "montante", "valor", "amount", "débito", "credito", "crédito"].some(
-        (k) => c.includes(k),
-      ),
-    );
-    setHasHeader(looksLikeHeader);
-    if (looksLikeHeader) {
-      const d = guessColumn(rows[0], ["data", "date"]);
-      const desc = guessColumn(rows[0], ["descri", "movimento", "detalhe"]);
-      const amt = guessColumn(rows[0], ["montante", "valor", "amount", "importância"]);
-      const deb = guessColumn(rows[0], ["débito", "debito", "debit", "saída", "saida"]);
-      const cred = guessColumn(rows[0], ["crédito", "credito", "credit", "entrada"]);
-      if (d >= 0) setDateIndex(d);
-      if (desc >= 0) setDescriptionIndex(desc);
+    // Detectar a linha de cabeçalho, saltando o preâmbulo do extracto.
+    const headerIdx = detectHeaderRowIndex(rows);
+    const skip = headerIdx >= 0 ? headerIdx : 0;
+    const header = headerIdx >= 0;
+    setSkipRows(skip);
+    setHasHeader(header);
+
+    if (header) {
+      const hdr = rows[headerIdx];
+      const d = guessColumn(hdr, ["data", "date"]);
+      const desc = guessColumn(hdr, ["descri", "movimento", "detalhe"]);
+      const amt = guessColumn(hdr, [
+        "montante",
+        "valor",
+        "amount",
+        "importância",
+      ]);
+      const deb = guessColumn(hdr, ["débito", "debito", "debit", "saída", "saida"]);
+      const cred = guessColumn(hdr, ["crédito", "credito", "credit", "entrada"]);
+      // Preferir a data contabilística, quando existe mais do que uma coluna de data.
+      const dCont = guessColumn(hdr, ["contabil"]);
+      setDateIndex(dCont >= 0 ? dCont : d >= 0 ? d : 0);
+      setDescriptionIndex(desc >= 0 ? desc : 1);
       if (amt >= 0) {
         setAmountMode("single");
         setAmountIndex(amt);
@@ -100,6 +114,7 @@ export function ImportWizard({ accounts }: { accounts: AccountOption[] }) {
   const mapping: ColumnMapping = useMemo(
     () => ({
       hasHeader,
+      skipRows,
       dateIndex,
       descriptionIndex,
       ...(amountMode === "single"
@@ -108,6 +123,7 @@ export function ImportWizard({ accounts }: { accounts: AccountOption[] }) {
     }),
     [
       hasHeader,
+      skipRows,
       dateIndex,
       descriptionIndex,
       amountMode,
@@ -200,15 +216,30 @@ export function ImportWizard({ accounts }: { accounts: AccountOption[] }) {
                 Mapear colunas
               </p>
 
-              <label className="flex items-center gap-2 text-sm">
-                <input
-                  type="checkbox"
-                  checked={hasHeader}
-                  onChange={(e) => setHasHeader(e.target.checked)}
-                  className="size-4 accent-primary"
-                />
-                A primeira linha é um cabeçalho
-              </label>
+              <div className="flex flex-wrap items-end gap-4">
+                <div className="space-y-1.5">
+                  <Label htmlFor="skip-rows">Linhas a ignorar no topo</Label>
+                  <input
+                    id="skip-rows"
+                    type="number"
+                    min={0}
+                    value={skipRows}
+                    onChange={(e) =>
+                      setSkipRows(Math.max(0, Number(e.target.value) || 0))
+                    }
+                    className="h-10 w-24 rounded-lg border border-input bg-transparent px-2.5 text-sm"
+                  />
+                </div>
+                <label className="flex items-center gap-2 pb-2.5 text-sm">
+                  <input
+                    type="checkbox"
+                    checked={hasHeader}
+                    onChange={(e) => setHasHeader(e.target.checked)}
+                    className="size-4 accent-primary"
+                  />
+                  A linha seguinte é um cabeçalho
+                </label>
+              </div>
 
               <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
                 <div className="space-y-1.5">
