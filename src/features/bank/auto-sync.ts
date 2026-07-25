@@ -19,7 +19,10 @@ import { importBankTransactions, reconcileAccountBalance } from "./sync";
  * liquida (1-3 dias úteis); é um limite do Open Banking, não da app.
  */
 
-const COOLDOWN_MINUTES = 180;
+// 12h entre sincronizações automáticas: cada sync gasta ~2 acessos ao banco
+// (movimentos + saldo), pelo que ~2 syncs/dia mantêm-se dentro do limite
+// PSD2 de ~4 acessos diários por conta. O botão manual continua disponível.
+const COOLDOWN_MINUTES = 720;
 
 export async function syncStaleBankLinks(): Promise<{ imported: number }> {
   const supabase = await createClient();

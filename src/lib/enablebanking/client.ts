@@ -117,8 +117,10 @@ function compactDetail(raw: string): string {
 /** Mensagem compreensível a partir de um erro do fornecedor. */
 export function providerErrorMessage(error: unknown): string {
   if (error instanceof ProviderError) {
-    if (error.status === 429) {
-      return "O banco limita as sincronizações automáticas (cerca de 4 por dia). Tente daqui a algumas horas.";
+    // 429 e 422 são as respostas típicas ao exceder o limite diário de
+    // acessos (~4/dia) da maioria dos bancos via Open Banking.
+    if (error.status === 429 || error.status === 422) {
+      return "Atingiu o limite de sincronizações que o banco permite por dia (cerca de 4). Volte a sincronizar daqui a algumas horas — os movimentos aparecem na mesma.";
     }
     if (error.status === 401 || error.status === 403) {
       return "O consentimento do banco expirou ou foi revogado. Ligue o banco novamente.";
@@ -279,6 +281,31 @@ export function providerAmountToMinorUnits(amount: string): number | null {
   return Number.isSafeInteger(total) ? sign * total : null;
 }
 
+/**
+ * Saldo CONTABILÍSTICO (booked) da conta, em unidades mínimas. Uma só chamada
+ * (`/balances`), para minimizar acessos ao banco (limite ~4/dia). Determinístico
+ * e a evitar o saldo "esperado"/disponível (XPCD), que inclui pendentes.
+ * Ordem: closingBooked → interimBooked → forwardAvailable → primeiro.
+ */
+export async function getBookedBalanceMinor(
+  uid: string,
+): Promise<number | null> {
+  const balances = await ebFetch<BalancesResponse>(
+    `/accounts/${uid}/balances`,
+  );
+  const byType = (type: string) =>
+    balances.balances.find((b) => b.balance_type === type);
+  const balance =
+    byType("CLBD") ??
+    byType("ITBD") ??
+    byType("PRCD") ??
+    balances.balances[0];
+
+  return balance
+    ? providerAmountToMinorUnits(balance.balance_amount.amount)
+    : null;
+}
+
 export async function getExternalAccountSummary(
   uid: string,
 ): Promise<ExternalAccountSummary> {
@@ -343,7 +370,6 @@ interface TransactionsResponse {
 }
 
 const MAX_PAGES = 10;
-const HISTORY_DAYS = 90;
 
 type ProviderTransaction = TransactionsResponse["transactions"][number];
 
@@ -374,9 +400,11 @@ export function resolveTransactionExternalId(
 }
 
 /**
- * Movimentos contabilizados (BOOK) normalizados, com paginação e janela de
- * 90 dias. Só se ignoram pendentes e linhas sem data ou montante válido; os
- * que não trazem identificador do banco recebem um id sintético estável.
+ * Movimentos contabilizados (BOOK) normalizados, com paginação. Uma só
+ * chamada por página, para minimizar acessos ao banco (limite ~4/dia); sem
+ * `date_from`, que alguns bancos (ex.: Abanca) rejeitam com 422. Só se
+ * ignoram pendentes e linhas sem data/montante; os que não trazem
+ * identificador do banco recebem um id sintético estável.
  */
 export async function getBookedTransactions(
   uid: string,
@@ -384,33 +412,13 @@ export async function getBookedTransactions(
   const normalized: ExternalTransaction[] = [];
   let continuationKey: string | null | undefined;
 
-  const dateFrom = new Date(Date.now() - HISTORY_DAYS * 24 * 60 * 60 * 1000)
-    .toISOString()
-    .slice(0, 10);
-
   for (let page = 0; page < MAX_PAGES; page++) {
-    let data: TransactionsResponse;
-    if (continuationKey) {
-      data = await ebFetch<TransactionsResponse>(
-        `/accounts/${uid}/transactions?continuation_key=${encodeURIComponent(continuationKey)}`,
-      );
-    } else {
-      // Alguns bancos rejeitam `date_from`; nesse caso, repetir sem o
-      // parâmetro (janela por defeito) em vez de falhar a sincronização.
-      try {
-        data = await ebFetch<TransactionsResponse>(
-          `/accounts/${uid}/transactions?date_from=${dateFrom}`,
-        );
-      } catch (error) {
-        if (error instanceof ProviderError && error.status >= 400 && error.status < 500 && error.status !== 429) {
-          data = await ebFetch<TransactionsResponse>(
-            `/accounts/${uid}/transactions`,
-          );
-        } else {
-          throw error;
-        }
-      }
-    }
+    const params = continuationKey
+      ? `?continuation_key=${encodeURIComponent(continuationKey)}`
+      : "";
+    const data = await ebFetch<TransactionsResponse>(
+      `/accounts/${uid}/transactions${params}`,
+    );
 
     for (const row of data.transactions) {
       const occurredOn = row.booking_date ?? row.value_date;

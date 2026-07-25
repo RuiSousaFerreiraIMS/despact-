@@ -1,8 +1,8 @@
 import { categorize } from "@/features/categorization/rules";
 import { loadRulesForEngine } from "@/features/categorization/queries";
 import {
+  getBookedBalanceMinor,
   getBookedTransactions,
-  getExternalAccountSummary,
 } from "@/lib/enablebanking/client";
 import type { ExternalTransaction } from "@/lib/enablebanking/client";
 import { createClient } from "@/lib/supabase/server";
@@ -20,8 +20,8 @@ export async function reconcileAccountBalance(
   accountId: string,
   externalAccountUid: string,
 ): Promise<number | null> {
-  const summary = await getExternalAccountSummary(externalAccountUid);
-  if (summary.balanceMinor === null) {
+  const bookedMinor = await getBookedBalanceMinor(externalAccountUid);
+  if (bookedMinor === null) {
     return null;
   }
 
@@ -39,10 +39,10 @@ export async function reconcileAccountBalance(
   ]);
 
   if (!derived || !account) {
-    return summary.balanceMinor;
+    return bookedMinor;
   }
 
-  const delta = summary.balanceMinor - (derived.balance_minor ?? 0);
+  const delta = bookedMinor - (derived.balance_minor ?? 0);
   if (delta !== 0) {
     await supabase
       .from("accounts")
@@ -52,7 +52,7 @@ export async function reconcileAccountBalance(
       .eq("id", accountId);
   }
 
-  return summary.balanceMinor;
+  return bookedMinor;
 }
 
 /**
