@@ -29,12 +29,18 @@ type AmountMode = "single" | "split";
 
 const PREVIEW_LIMIT = 8;
 
-/** Palavras-chave para adivinhar as colunas a partir do cabeçalho. */
+/**
+ * Adivinha a coluna a partir do cabeçalho, por ORDEM DE PRIORIDADE das
+ * palavras-chave: tenta a primeira palavra em todas as colunas antes de
+ * passar à seguinte. Assim "montante" ganha a "valor" (que também aparece
+ * em colunas de data como "D. VALOR").
+ */
 function guessColumn(headers: string[], keywords: string[]): number {
   const lower = headers.map((h) => h.toLowerCase());
-  for (let i = 0; i < lower.length; i++) {
-    if (keywords.some((k) => lower[i].includes(k))) {
-      return i;
+  for (const keyword of keywords) {
+    const index = lower.findIndex((cell) => cell.includes(keyword));
+    if (index >= 0) {
+      return index;
     }
   }
   return -1;
