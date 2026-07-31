@@ -8,8 +8,53 @@ import { createClient } from "@/lib/supabase/server";
 import { categorize } from "./rules";
 import type { MatchType } from "./rules";
 import { loadRulesForEngine } from "./queries";
+import { SUGGESTED_RULES } from "./suggested";
 
 const MATCH_TYPES: MatchType[] = ["contains", "starts_with", "equals"];
+
+/**
+ * Aplica as regras aos movimentos sem categoria. Devolve quantos actualizou.
+ * Reutilizado pela acção manual e pela sementeira de regras sugeridas.
+ */
+async function applyRulesToPending(
+  supabase: Awaited<ReturnType<typeof createClient>>,
+): Promise<number> {
+  const rules = await loadRulesForEngine();
+  if (rules.length === 0) {
+    return 0;
+  }
+
+  const { data: pending, error } = await supabase
+    .from("transactions")
+    .select("id, description, kind")
+    .is("category_id", null)
+    .in("kind", ["income", "expense"]);
+
+  if (error || !pending) {
+    return 0;
+  }
+
+  let updated = 0;
+  for (const transaction of pending) {
+    const categoryId = categorize(
+      {
+        description: transaction.description,
+        kind: transaction.kind as "income" | "expense",
+      },
+      rules,
+    );
+    if (categoryId) {
+      const { error: updateError } = await supabase
+        .from("transactions")
+        .update({ category_id: categoryId })
+        .eq("id", transaction.id);
+      if (!updateError) {
+        updated += 1;
+      }
+    }
+  }
+  return updated;
+}
 
 async function requireUserId(): Promise<string> {
   const supabase = await createClient();
@@ -108,39 +153,7 @@ export async function applyRulesToUncategorized() {
     );
   }
 
-  const { data: pending, error } = await supabase
-    .from("transactions")
-    .select("id, description, kind")
-    .is("category_id", null)
-    .in("kind", ["income", "expense"]);
-
-  if (error) {
-    redirect(
-      `/categories/rules?error=${encodeURIComponent("Não foi possível carregar os movimentos.")}`,
-    );
-  }
-
-  let updated = 0;
-  for (const transaction of pending) {
-    const categoryId = categorize(
-      {
-        description: transaction.description,
-        kind: transaction.kind as "income" | "expense",
-      },
-      rules,
-    );
-
-    if (categoryId) {
-      const { error: updateError } = await supabase
-        .from("transactions")
-        .update({ category_id: categoryId })
-        .eq("id", transaction.id);
-
-      if (!updateError) {
-        updated += 1;
-      }
-    }
-  }
+  const updated = await applyRulesToPending(supabase);
 
   revalidatePath("/categories/rules");
   revalidatePath("/transactions");
@@ -149,6 +162,113 @@ export async function applyRulesToUncategorized() {
       updated === 0
         ? "Nenhum movimento sem categoria correspondeu às regras."
         : `${updated} movimentos categorizados.`,
+    )}`,
+  );
+}
+
+/**
+ * Adiciona regras sugeridas para comerciantes comuns (criando categorias em
+ * falta) e aplica-as logo aos movimentos sem categoria. Idempotente: não
+ * duplica regras já existentes.
+ */
+export async function seedSuggestedRules() {
+  const userId = await requireUserId();
+  const supabase = await createClient();
+
+  // Categorias activas do utilizador, indexadas por tipo + nome minúsculo.
+  const { data: categories } = await supabase
+    .from("categories")
+    .select("id, name, type")
+    .is("archived_at", null);
+
+  const catKey = (type: string, name: string) =>
+    `${type}:${name.toLowerCase()}`;
+  const catMap = new Map<string, string>();
+  for (const c of categories ?? []) {
+    catMap.set(catKey(c.type, c.name), c.id);
+  }
+
+  // Garantir que existem as categorias referidas pelas regras sugeridas.
+  const neededCategories = new Map<
+    string,
+    { name: string; type: "income" | "expense" }
+  >();
+  for (const rule of SUGGESTED_RULES) {
+    const key = catKey(rule.categoryType, rule.categoryName);
+    if (!catMap.has(key) && !neededCategories.has(key)) {
+      neededCategories.set(key, {
+        name: rule.categoryName,
+        type: rule.categoryType,
+      });
+    }
+  }
+  for (const [key, cat] of neededCategories) {
+    const { data: created } = await supabase
+      .from("categories")
+      .insert({ user_id: userId, name: cat.name, type: cat.type })
+      .select("id")
+      .single();
+    if (created) {
+      catMap.set(key, created.id);
+    }
+  }
+
+  // Regras já existentes, para não duplicar (por padrão + categoria).
+  const { data: existingRules } = await supabase
+    .from("categorization_rules")
+    .select("pattern, category_id, priority");
+  const existingKey = new Set(
+    (existingRules ?? []).map(
+      (r) => `${r.category_id}:${r.pattern.toLowerCase()}`,
+    ),
+  );
+  let priority =
+    (existingRules ?? []).reduce((max, r) => Math.max(max, r.priority), -1) + 1;
+
+  const toInsert: {
+    user_id: string;
+    pattern: string;
+    match_type: string;
+    category_id: string;
+    priority: number;
+  }[] = [];
+  for (const rule of SUGGESTED_RULES) {
+    const categoryId = catMap.get(
+      catKey(rule.categoryType, rule.categoryName),
+    );
+    if (!categoryId) {
+      continue;
+    }
+    if (existingKey.has(`${categoryId}:${rule.pattern.toLowerCase()}`)) {
+      continue;
+    }
+    toInsert.push({
+      user_id: userId,
+      pattern: rule.pattern,
+      match_type: "contains",
+      category_id: categoryId,
+      priority: priority++,
+    });
+  }
+
+  if (toInsert.length > 0) {
+    const { error } = await supabase
+      .from("categorization_rules")
+      .insert(toInsert);
+    if (error) {
+      redirect(
+        `/categories/rules?error=${encodeURIComponent("Não foi possível adicionar as regras sugeridas.")}`,
+      );
+    }
+  }
+
+  const categorized = await applyRulesToPending(supabase);
+
+  revalidatePath("/categories/rules");
+  revalidatePath("/transactions");
+  redirect(
+    `/categories/rules?message=${encodeURIComponent(
+      `${toInsert.length} regras adicionadas; ${categorized} movimentos categorizados.`,
     )}`,
   );
 }

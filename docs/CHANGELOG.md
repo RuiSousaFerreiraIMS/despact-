@@ -102,6 +102,12 @@
 - Desempenho: fontes self-hosted via `next/font`; apenas dois componentes cliente (formulário de movimento e navegação).
 - Verificado em execução: cabeçalhos, skip link e 404 autenticado.
 
+### Pós-Sprint 6 — regras sugeridas (categorização out-of-the-box)
+
+- Botão "Adicionar regras sugeridas": um conjunto curado de ~50 regras para comerciantes comuns em Portugal (Continente, Lidl, McDonald's, farmácias, combustíveis, Netflix, Anthropic/Claude, casino, etc.), mapeadas às categorias predefinidas.
+- A acção cria as categorias em falta, insere as regras (sem duplicar) e **aplica-as logo aos movimentos sem categoria** — resolve o caso "importei o CSV e ficou tudo sem categoria".
+- Padrões específicos com maior prioridade (ex.: "uber eats" antes de "uber").
+
 ### Pós-Sprint 6 — CSV idempotente (workflow prático)
 
 - Importação CSV passou a **deduplicar**: cada linha recebe um identificador estável por conta (`csv:` + hash de conta+data+montante+descrição). Reimportar o mesmo extracto, ou extractos que se sobrepõem, traz apenas movimentos novos — assente no índice único `(user_id, external_id)` já existente.

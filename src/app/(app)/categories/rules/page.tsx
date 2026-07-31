@@ -1,7 +1,8 @@
-import { Sparkles } from "lucide-react";
+import { Sparkles, Wand2 } from "lucide-react";
 import Link from "next/link";
 
 import { FormAlert } from "@/components/form-alert";
+import { SubmitButton } from "@/components/submit-button";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
@@ -12,6 +13,7 @@ import {
   applyRulesToUncategorized,
   createRule,
   deleteRule,
+  seedSuggestedRules,
 } from "@/features/categorization/actions";
 import { listRules } from "@/features/categorization/queries";
 import { listActiveCategories } from "@/features/categories/queries";
@@ -57,6 +59,25 @@ export default async function RulesPage({
 
       {message ? <FormAlert variant="success">{message}</FormAlert> : null}
       {error ? <FormAlert variant="error">{error}</FormAlert> : null}
+
+      <Card className="border-success/30 bg-accent/40">
+        <CardContent className="flex flex-wrap items-center justify-between gap-3">
+          <div>
+            <p className="font-medium">Começar em segundos</p>
+            <p className="text-sm text-muted-foreground">
+              Adiciona regras para comerciantes comuns (Continente, Lidl,
+              farmácias, combustíveis, subscrições…) e categoriza logo os
+              movimentos que já tem.
+            </p>
+          </div>
+          <form action={seedSuggestedRules}>
+            <SubmitButton pendingLabel="A configurar…">
+              <Wand2 data-icon="inline-start" />
+              Adicionar regras sugeridas
+            </SubmitButton>
+          </form>
+        </CardContent>
+      </Card>
 
       {categories.length === 0 ? (
         <Card>
