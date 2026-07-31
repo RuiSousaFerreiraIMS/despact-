@@ -161,7 +161,15 @@ export function ImportWizard({ accounts }: { accounts: AccountOption[] }) {
     startTransition(async () => {
       const result = await importCsvTransactions(accountId, normalized.rows);
       if (result.ok) {
-        setDone(`${result.imported} movimentos importados.`);
+        const skippedNote =
+          result.skipped > 0
+            ? ` ${result.skipped} já existiam e foram ignorados.`
+            : "";
+        setDone(
+          result.imported === 0
+            ? `Nada novo para importar — todos os ${result.skipped} movimentos já estavam registados.`
+            : `${result.imported} movimentos importados.${skippedNote}`,
+        );
         setGrid(null);
         router.refresh();
       } else {
