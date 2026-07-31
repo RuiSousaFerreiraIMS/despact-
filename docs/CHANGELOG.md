@@ -102,6 +102,13 @@
 - Desempenho: fontes self-hosted via `next/font`; apenas dois componentes cliente (formulário de movimento e navegação).
 - Verificado em execução: cabeçalhos, skip link e 404 autenticado.
 
+### Pós-Sprint 6 — CSV idempotente (workflow prático)
+
+- Importação CSV passou a **deduplicar**: cada linha recebe um identificador estável por conta (`csv:` + hash de conta+data+montante+descrição). Reimportar o mesmo extracto, ou extractos que se sobrepõem, traz apenas movimentos novos — assente no índice único `(user_id, external_id)` já existente.
+- Deduplicação também dentro do próprio ficheiro; mensagem indica quantos foram ignorados por já existirem.
+- Correcção do palpite da coluna de montante: por prioridade de palavra-chave ("montante" ganha a "valor", que aparecia em "D. VALOR"), evitando "0 válidos" nos extractos Abanca.
+- Limite conhecido: dois movimentos idênticos no mesmo dia (data+montante+descrição) colapsam num só; raro e preferível a duplicar.
+
 ### Pós-Sprint 6 — importação CSV robusta a extractos reais
 
 - Correcção: a deteção do separador olhava só para a primeira linha; em extractos com preâmbulo (ex.: IBAN do Abanca na 1.ª linha, sem separadores) escolhia mal. Agora soma ocorrências nas primeiras linhas.
