@@ -11,6 +11,7 @@ import { FormAlert } from "@/components/form-alert";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
+import { categoryEmoji } from "@/features/categories/emoji";
 import {
   deleteTransaction,
   deleteTransfer,
@@ -38,6 +39,7 @@ function TransactionRow({
 }) {
   const isTransfer = transaction.kind === "transfer";
   const Icon = KIND_ICON[transaction.kind];
+  const hasCategory = !isTransfer && Boolean(transaction.category?.name);
 
   return (
     <li className="flex flex-wrap items-center gap-3 px-5 py-3.5">
@@ -49,8 +51,15 @@ function TransactionRow({
             "bg-secondary text-secondary-foreground",
           isTransfer && "bg-muted text-muted-foreground",
         )}
+        aria-hidden
       >
-        <Icon className="size-4" />
+        {hasCategory ? (
+          <span className="text-base leading-none">
+            {categoryEmoji(transaction.category?.name)}
+          </span>
+        ) : (
+          <Icon className="size-4" />
+        )}
       </span>
 
       <div className="min-w-0 flex-1">
@@ -63,9 +72,13 @@ function TransactionRow({
           {formatDate(transaction.occurred_on)} · {transaction.account?.name}
           {isTransfer ? (
             <Badge variant="secondary">Transferência</Badge>
-          ) : transaction.category?.name && transaction.description ? (
-            <span className="text-xs">{transaction.category.name}</span>
-          ) : null}
+          ) : hasCategory ? (
+            <Badge variant="secondary">{transaction.category?.name}</Badge>
+          ) : (
+            <span className="text-xs text-muted-foreground/70">
+              Sem categoria
+            </span>
+          )}
         </p>
       </div>
 
