@@ -3,8 +3,14 @@ import Link from "next/link";
 import { redirect } from "next/navigation";
 
 import { Card, CardContent } from "@/components/ui/card";
+import { getDashboardCharts } from "@/features/dashboard/charts";
+import {
+  MonthlyFlowChart,
+  SpendingByCategoryChart,
+} from "@/features/dashboard/dashboard-charts";
 import { getDashboardData } from "@/features/dashboard/queries";
 import { getInsights } from "@/features/insights/queries";
+import { categoryEmoji } from "@/features/categories/emoji";
 import { createClient } from "@/lib/supabase/server";
 import { formatMinorUnits } from "@/lib/money/format";
 import { cn } from "@/lib/utils";
@@ -50,8 +56,11 @@ export default async function DashboardPage() {
     redirect("/login");
   }
 
-  const [{ netWorthMinor, activeAccounts, monthSummary, activeGoals }, insights] =
-    await Promise.all([getDashboardData(), getInsights()]);
+  const [
+    { netWorthMinor, activeAccounts, monthSummary, activeGoals },
+    insights,
+    charts,
+  ] = await Promise.all([getDashboardData(), getInsights(), getDashboardCharts()]);
 
   const hasAccounts = activeAccounts.length > 0;
 
@@ -152,6 +161,74 @@ export default async function DashboardPage() {
           </Card>
         </section>
       )}
+
+      {hasAccounts ? (
+        <section className="space-y-4" aria-label="Análise">
+          <div className="grid grid-cols-1 gap-6 lg:grid-cols-2">
+            <div className="space-y-3">
+              <h2 className="font-display text-lg font-semibold tracking-tight">
+                Onde gastei · {monthLabel(monthSummary.monthStart)}
+              </h2>
+              <Card>
+                <CardContent>
+                  <SpendingByCategoryChart data={charts.spendingByCategory} />
+                </CardContent>
+              </Card>
+            </div>
+            <div className="space-y-3">
+              <h2 className="font-display text-lg font-semibold tracking-tight">
+                Receita vs despesa · 6 meses
+              </h2>
+              <Card>
+                <CardContent className="pt-4">
+                  <div className="mb-2 flex gap-4 text-xs text-muted-foreground">
+                    <span className="flex items-center gap-1.5">
+                      <span className="size-2.5 rounded-full bg-success" />
+                      Receita
+                    </span>
+                    <span className="flex items-center gap-1.5">
+                      <span className="size-2.5 rounded-full bg-slate-500" />
+                      Despesa
+                    </span>
+                  </div>
+                  <MonthlyFlowChart data={charts.monthlyFlow} />
+                </CardContent>
+              </Card>
+            </div>
+          </div>
+
+          {charts.topExpenses.length > 0 ? (
+            <div className="space-y-3">
+              <h2 className="font-display text-lg font-semibold tracking-tight">
+                Maiores despesas do mês
+              </h2>
+              <Card className="py-0">
+                <ul className="divide-y divide-border">
+                  {charts.topExpenses.map((expense) => (
+                    <li
+                      key={expense.id}
+                      className="flex items-center gap-3 px-5 py-3"
+                    >
+                      <span
+                        className="flex size-8 shrink-0 items-center justify-center rounded-full bg-secondary text-base"
+                        aria-hidden
+                      >
+                        {categoryEmoji(expense.categoryName)}
+                      </span>
+                      <span className="min-w-0 flex-1 truncate text-sm font-medium">
+                        {expense.description}
+                      </span>
+                      <span className="font-display font-semibold tabular-nums">
+                        {formatMinorUnits(expense.amountMinor, "EUR")}
+                      </span>
+                    </li>
+                  ))}
+                </ul>
+              </Card>
+            </div>
+          ) : null}
+        </section>
+      ) : null}
 
       {insights.length > 0 ? (
         <section className="space-y-3" aria-label="Insights">

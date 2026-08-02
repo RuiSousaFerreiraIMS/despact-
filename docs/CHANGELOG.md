@@ -102,6 +102,13 @@
 - Desempenho: fontes self-hosted via `next/font`; apenas dois componentes cliente (formulário de movimento e navegação).
 - Verificado em execução: cabeçalhos, skip link e 404 autenticado.
 
+### Pós-Sprint 6 — dashboard com gráficos (Recharts)
+
+- Painel redesenhado com gráficos profissionais: "Onde gastei" (gastos por categoria do mês, barras horizontais ordenadas), "Receita vs despesa" (6 meses, barras agrupadas) e "Maiores despesas do mês" (top 5 com emoji).
+- Agregações determinísticas em `src/features/dashboard/charts.ts`; gráficos cliente em `dashboard-charts.tsx` com cores da marca.
+- Mantém património líquido, resumo do mês e insights.
+- Recharts adicionado (biblioteca de gráficos já prevista no projecto).
+
 ### Pós-Sprint 6 — emojis de categoria e correcção da moeda
 
 - Correcção: o símbolo da moeda aparecia como "¤" em alguns ambientes (ICU sem dados de moeda). A formatação passa a compor o número e juntar o símbolo (€, $, £, R$) manualmente.
