@@ -24,3 +24,6 @@ pnpm-debug.log*
 
 # Estado local da Supabase CLI (ligação ao projecto); as migrações são versionadas
 supabase/.temp/
+
+# Scripts de teste E2E temporários
+.e2e-*.mjs
