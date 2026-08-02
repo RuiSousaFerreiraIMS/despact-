@@ -102,6 +102,11 @@
 - Desempenho: fontes self-hosted via `next/font`; apenas dois componentes cliente (formulário de movimento e navegação).
 - Verificado em execução: cabeçalhos, skip link e 404 autenticado.
 
+### Pós-Sprint 6 — emojis de categoria e correcção da moeda
+
+- Correcção: o símbolo da moeda aparecia como "¤" em alguns ambientes (ICU sem dados de moeda). A formatação passa a compor o número e juntar o símbolo (€, $, £, R$) manualmente.
+- Cada movimento categorizado mostra o emoji da categoria no avatar (`categoryEmoji`, deduzido do nome, sem configuração). Categoria apresentada como badge; "Sem categoria" quando aplicável.
+
 ### Pós-Sprint 6 — regras sugeridas (categorização out-of-the-box)
 
 - Botão "Adicionar regras sugeridas": um conjunto curado de ~50 regras para comerciantes comuns em Portugal (Continente, Lidl, McDonald's, farmácias, combustíveis, Netflix, Anthropic/Claude, casino, etc.), mapeadas às categorias predefinidas.

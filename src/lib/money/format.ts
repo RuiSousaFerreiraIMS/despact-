@@ -11,15 +11,30 @@
 
 const MINOR_UNITS_PER_MAJOR = 100;
 
-/** Formata unidades mínimas como moeda em pt-PT (ex.: 123456 → "1 234,56 €"). */
+/** Símbolo por moeda; o código serve de recurso para moedas não mapeadas. */
+const CURRENCY_SYMBOLS: Record<string, string> = {
+  EUR: "€",
+  USD: "$",
+  GBP: "£",
+  BRL: "R$",
+};
+
+/**
+ * Formata unidades mínimas como moeda em pt-PT (ex.: 123456 → "1 234,56 €").
+ * Formata o número e acrescenta o símbolo manualmente, evitando o símbolo
+ * genérico "¤" que aparece quando o ambiente não tem os dados de moeda do ICU.
+ */
 export function formatMinorUnits(
   amountMinor: number,
   currencyCode: string,
 ): string {
-  return new Intl.NumberFormat("pt-PT", {
-    style: "currency",
-    currency: currencyCode,
+  const number = new Intl.NumberFormat("pt-PT", {
+    minimumFractionDigits: 2,
+    maximumFractionDigits: 2,
   }).format(amountMinor / MINOR_UNITS_PER_MAJOR);
+  const symbol =
+    CURRENCY_SYMBOLS[currencyCode?.toUpperCase()] ?? currencyCode ?? "";
+  return symbol ? `${number} ${symbol}` : number;
 }
 
 /**
