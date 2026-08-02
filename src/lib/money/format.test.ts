@@ -43,6 +43,12 @@ describe("formatMinorUnits", () => {
     expect(normalize(formatMinorUnits(1234567, "EUR"))).toBe("12 345,67 €");
     expect(normalize(formatMinorUnits(-25000, "EUR"))).toBe("-250,00 €");
   });
+
+  it("trata 'XXX', vazio ou inválido como euro", () => {
+    expect(normalize(formatMinorUnits(25671, "XXX"))).toBe("256,71 €");
+    expect(normalize(formatMinorUnits(1000, ""))).toBe("10,00 €");
+    expect(normalize(formatMinorUnits(1000, "eur"))).toBe("10,00 €");
+  });
 });
 
 describe("minorUnitsToInputValue", () => {

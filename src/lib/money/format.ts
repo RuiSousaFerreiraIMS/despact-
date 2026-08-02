@@ -32,9 +32,13 @@ export function formatMinorUnits(
     minimumFractionDigits: 2,
     maximumFractionDigits: 2,
   }).format(amountMinor / MINOR_UNITS_PER_MAJOR);
-  const symbol =
-    CURRENCY_SYMBOLS[currencyCode?.toUpperCase()] ?? currencyCode ?? "";
-  return symbol ? `${number} ${symbol}` : number;
+
+  // "XXX" (ISO: moeda desconhecida), vazio ou código inválido → assumir EUR,
+  // já que o produto é em euros (D-001). Evita mostrar "XXX" ou "¤".
+  const code = (currencyCode ?? "").toUpperCase();
+  const effective = /^[A-Z]{3}$/.test(code) && code !== "XXX" ? code : "EUR";
+  const symbol = CURRENCY_SYMBOLS[effective] ?? effective;
+  return `${number} ${symbol}`;
 }
 
 /**

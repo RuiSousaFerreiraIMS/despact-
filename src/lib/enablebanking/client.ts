@@ -306,6 +306,16 @@ export async function getBookedBalanceMinor(
     : null;
 }
 
+/**
+ * Normaliza o código de moeda do fornecedor: "XXX" (moeda desconhecida),
+ * vazio ou inválido tornam-se EUR, a moeda do produto (D-001). Alguns bancos
+ * (ex.: Abanca) devolvem "XXX".
+ */
+function normalizeCurrency(code: string | null | undefined): string {
+  const c = (code ?? "").toUpperCase();
+  return /^[A-Z]{3}$/.test(c) && c !== "XXX" ? c : "EUR";
+}
+
 export async function getExternalAccountSummary(
   uid: string,
 ): Promise<ExternalAccountSummary> {
@@ -335,8 +345,9 @@ export async function getExternalAccountSummary(
       details.product ??
       details.account_id?.iban ??
       "Conta bancária",
-    currencyCode:
-      details.currency ?? balance?.balance_amount.currency ?? "EUR",
+    currencyCode: normalizeCurrency(
+      details.currency ?? balance?.balance_amount.currency,
+    ),
     balanceMinor: balance
       ? providerAmountToMinorUnits(balance.balance_amount.amount)
       : null,
